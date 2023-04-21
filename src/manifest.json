@@ -3,21 +3,23 @@
   "bundleVersion": 1,
   "commands": [
     {
-      "name": "my-command",
-      "identifier": "table-generator.my-command-identifier",
-      "script": "./my-command.js",
+      "name": "Créer un tableau",
+      "identifier": "create-table",
+      "script": "./create-table.js",
+      "shortcut": "cmd alt ctrl t",
       "handlers": {
         "run": "onRun",
         "actions": {
+          "Startup": "registerToolbarActions",
           "Shutdown": "onShutdown"
         }
       }
     }
   ],
   "menu": {
-    "title": "table-generator",
+    "title": "Génération de tableau",
     "items": [
-      "table-generator.my-command-identifier"
+      "create-table"
     ]
   }
 }

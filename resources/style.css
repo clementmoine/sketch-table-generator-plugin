@@ -1,28 +1,37 @@
-/* some default styles to make the view more native like */
-
 html {
-  box-sizing: border-box;
-  background: transparent;
+  font-size: 12px;
+  font-family: Arial, Helvetica, sans-serif;
 
-  /* Prevent the page to be scrollable */
-  overflow: hidden;
-
-  /* Force the default cursor, even on text */
-  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-*, *:before, *:after {
-  box-sizing: inherit;
+h1 {
+  cursor: default;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+#generator {
+  border-spacing: 4px;
+}
+
+#generator .cell {
+  padding: 0;
+  line-height: 0;
+}
+
+#generator .cell > button {
   margin: 0;
   padding: 0;
-  position: relative;
-
-  /* Prevent the content from being selectionable */
-  -webkit-user-select: none;
-  user-select: none;
+  width: 18px;
+  aspect-ratio: 1;
+  appearance: none;
+  border: 1px solid #7D7D7D;
+  background-color: transparent;
 }
 
-input, textarea {
-  -webkit-user-select: auto;
-  user-select: auto;
+#generator .cell.active > button {
+  border-color: #538FD2;
+  background-color: #E9F2FB;
 }
