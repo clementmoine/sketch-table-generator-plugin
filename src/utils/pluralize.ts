@@ -6,7 +6,7 @@
  * @param {string} [suffix=s] - Le suffixe à ajouter pour former le pluriel.
  * @returns {string} Le nom de l'élément avec le suffixe pluriel ajouté si nécessaire.
  */
-const pluralize = (count, noun, suffix = "s") =>
+const pluralize = (count: number, noun: string, suffix = "s"): string =>
   `${count} ${noun}${count !== 1 ? suffix : ""}`;
 
 export default pluralize;

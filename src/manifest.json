@@ -5,7 +5,7 @@
     {
       "name": "Créer un tableau",
       "identifier": "create-table",
-      "script": "./commands/createTable.js",
+      "script": "./commands/createTable.ts",
       "shortcut": "cmd control t",
       "handlers": {
         "run": "onRun",

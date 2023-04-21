@@ -2,7 +2,6 @@ import UI from "sketch/ui";
 import sketch from "sketch";
 import { Page, Group } from "sketch/dom";
 import BrowserWindow from "sketch-module-web-view";
-import { getWebview } from "sketch-module-web-view/remote";
 
 import getLibraryLayerStyle from "../utils/getLibraryLayerStyle";
 import getLibrarySymbol from "../utils/getLibrarySymbol";
@@ -46,6 +45,15 @@ export default function () {
   browserWindow.loadURL(require("../../resources/webview.html"));
 }
 
+type CreateTableOptions = {
+  rowCount?: number;
+  colCount?: number;
+  colWidth?: number;
+  rowPadding?: number;
+  colGap?: number;
+  groupByColumn?: boolean;
+}
+
 /**
  * Créer une nouvelle table dans le document Sketch actif.
  *
@@ -58,7 +66,7 @@ export default function () {
  * @param {number} [options.colGap=16] - L'espace entre les colonnes.
  * @param {number} [options.groupByColumn=false] - Permet de regrouper les cellules par colonnes plutôt que par lignes
  */
-async function createTable(options) {
+async function createTable(options: CreateTableOptions): Promise<void> {
   const {
     rowCount = 1,
     colCount = 1,
@@ -79,6 +87,10 @@ async function createTable(options) {
       getLibrarySymbol("Table/Header Label/Left/Default"),
     ]);
 
+  if (!TableRowStandard || !TableCellDefault || !TableHeaderLabelLeftDefault) {
+    return;
+  }
+
   // Create a new page for the table
   const page = new Page({
     name: "Table",
@@ -88,15 +100,13 @@ async function createTable(options) {
   // Create a group for the table
   const tableGroup = new Group({
     name: "Table",
-    parent: page,
-    selected: true,
+    parent: page as any,
   });
 
   // Create a group for the header
   const headerGroup = new Group({
     name: "Header",
     parent: tableGroup,
-    selected: true,
   });
 
   // Create the table header
@@ -131,7 +141,6 @@ async function createTable(options) {
   const rowsGroup = new Group({
     name: "Rows",
     parent: tableGroup,
-    selected: true,
   });
 
   // Create the table rows
@@ -140,7 +149,6 @@ async function createTable(options) {
     const rowGroup = new Group({
       name: `Row ${i + 1}`,
       parent: rowsGroup,
-      selected: true,
     });
 
     const row = TableRowStandard.createNewInstance();
@@ -151,7 +159,7 @@ async function createTable(options) {
     // Set the row layer style override to "Table/Row/Odd" if odd or "Table/Row/Even" if even
     const rowStyleOverride = row.overrides.find(
       (override) =>
-        override.property === "layerStyle" &&
+        (override.property as string) === "layerStyle" &&
         override.affectedLayer.name === "🎨 Background style"
     );
 
@@ -159,12 +167,13 @@ async function createTable(options) {
       i % 2 === 0 ? "Table/Row/_Odd (impair)" : "Table/Row/_Even (pair)";
     const rowStyle = getLibraryLayerStyle(styleName);
 
-    rowStyleOverride.value = rowStyle.id;
+    if (rowStyleOverride && rowStyle) {
+      rowStyleOverride.value = rowStyle.id;
+    }
 
     const cellsGroup = new Group({
       name: `Cells`,
       parent: rowGroup,
-      selected: true,
     });
 
     // Crée les cellules de la ligne
@@ -199,7 +208,7 @@ async function createTable(options) {
 // When the plugin is shutdown by Sketch (for example when the user disable the plugin)
 // we need to close the webview if it's open
 export function onShutdown() {
-  const existingWebview = getWebview(webviewIdentifier);
+  const existingWebview = BrowserWindow.fromId(webviewIdentifier);
 
   if (existingWebview) {
     existingWebview.close();

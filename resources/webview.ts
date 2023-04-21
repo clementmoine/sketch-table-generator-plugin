@@ -10,26 +10,28 @@
  * Resets the generator when the mouse leaves the container.
  */
 function resetGenerator() {
-  h1.innerText = "Insérer un tableau";
+  if (h1) {
+    h1.innerText = "Insérer un tableau";
 
-  document
-    .querySelectorAll(".cell")
-    .forEach((cell) => cell.classList.remove("active"));
+    document
+      .querySelectorAll(".cell")
+      .forEach((cell) => cell.classList.remove("active"));
+  }
 }
 
 /**
  * Handles hover events on table cells.
  * @param {MouseEvent} event - The hover event.
  */
-function handleHover(event) {
-  const cell = event.target.closest(".cell");
+function handleHover(event: MouseEvent) {
+  const cell = (event.target as HTMLElement).closest<HTMLElement>(".cell");
 
   if (!cell) return;
 
   const rowIndex = Number(cell.dataset.row);
   const colIndex = Number(cell.dataset.col);
 
-  document.querySelectorAll(".cell").forEach((cell) => {
+  document.querySelectorAll<HTMLElement>(".cell").forEach((cell) => {
     const cellColIndex = Number(cell.dataset.col);
     const cellRowIndex = Number(cell.dataset.row);
 
@@ -40,24 +42,35 @@ function handleHover(event) {
     }
   });
 
-  h1.innerText = `Tableau ${rowIndex + 1}x${colIndex + 1}`;
+  if (h1) {
+    h1.innerText = `Tableau ${rowIndex + 1}x${colIndex + 1}`;
+  }
 }
 
-function handleClick(event) {
-  const cell = Array.from(document.querySelectorAll(".cell.active")).pop();
+/**
+ * Handles click events on table cells.
+ * @param {MouseEvent} event - The click event.
+ */
+function handleClick(event: MouseEvent) {
+  const cell = Array.from(document.querySelectorAll<HTMLElement>(".cell.active")).pop();
 
   if (!cell) return;
 
   const rowIndex = Number(cell.dataset.row);
   const colIndex = Number(cell.dataset.col);
 
-  const colWidth = Number(document.getElementById('col-width').value) ?? 250;
+  const colWidth = Number((document.getElementById('col-width') as HTMLInputElement)?.value) ?? 250;
 
-  window.postMessage("nativeLog", {
+  window.postMessage("nativeLog", JSON.stringify({
     rowCount: rowIndex + 1,
     colCount: colIndex + 1,
     colWidth,
-  });
+  }));
+}
+
+type GeneratorOptions = {
+  rowCount: number,
+  colCount: number
 }
 
 /**
@@ -66,7 +79,13 @@ function handleClick(event) {
  * @param {number} options.rowCount - The number of rows in the table.
  * @param {number} options.colCount - The number of columns in the table.
  */
-function createGenerator({ rowCount, colCount }) {
+function createGenerator(options: GeneratorOptions) {
+  const { rowCount, colCount } = options
+  
+  if (!generator) {
+    return null;
+  }
+
   generator.addEventListener("mouseleave", resetGenerator);
   generator.addEventListener("click", handleClick);
   generator.addEventListener("mouseover", handleHover);
@@ -75,15 +94,15 @@ function createGenerator({ rowCount, colCount }) {
     const row = document.createElement("tr");
 
     row.classList.add("row");
-    row.dataset.row = rowId;
+    row.dataset.row = rowId.toString();
 
     for (let colId = 0; colId < colCount; colId++) {
       const cell = document.createElement("td");
       const button = document.createElement("button");
 
       cell.classList.add("cell");
-      cell.dataset.col = colId;
-      cell.dataset.row = rowId;
+      cell.dataset.col = colId.toString();;
+      cell.dataset.row = rowId.toString();;
 
       cell.appendChild(button);
       row.appendChild(cell);
