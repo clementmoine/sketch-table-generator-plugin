@@ -1,0 +1,22 @@
+import sketch from "sketch";
+
+/**
+ * Récupère le style de calque de la bibliothèque de design-system avec le nom spécifié.
+ *
+ * @param {string} name - Le nom du style de calque à récupérer.
+ * @returns {SharedStyle} Le style de calque importé.
+ */
+function getLibraryLayerStyle(name) {
+  const library = sketch
+    .getLibraries()
+    .find((library) => library.name.includes("design-system"));
+
+  const doc = sketch.getSelectedDocument();
+
+  return library
+    .getImportableLayerStyleReferencesForDocument(doc)
+    .find((ref) => ref.name === name)
+    .import();
+}
+
+export default getLibraryLayerStyle;

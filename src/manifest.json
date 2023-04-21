@@ -5,18 +5,18 @@
     {
       "name": "Créer un tableau",
       "identifier": "create-table",
-      "script": "./create-table.js",
-      "shortcut": "cmd alt ctrl t",
+      "script": "./commands/createTable.js",
+      "shortcut": "cmd control t",
       "handlers": {
         "run": "onRun",
         "actions": {
-          "Startup": "registerToolbarActions",
           "Shutdown": "onShutdown"
         }
       }
     }
   ],
   "menu": {
+    "isRoot": true,
     "title": "Génération de tableau",
     "items": [
       "create-table"

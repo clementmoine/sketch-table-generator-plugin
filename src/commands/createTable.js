@@ -4,6 +4,10 @@ import { Page, Group } from "sketch/dom";
 import BrowserWindow from "sketch-module-web-view";
 import { getWebview } from "sketch-module-web-view/remote";
 
+import getLibraryLayerStyle from "../utils/getLibraryLayerStyle";
+import getLibrarySymbol from "../utils/getLibrarySymbol";
+import pluralize from "../utils/pluralize";
+
 const webviewIdentifier = "table-generator.webview";
 
 export default function () {
@@ -39,57 +43,8 @@ export default function () {
     createTable(options).then(browserWindow.close);
   });
 
-  browserWindow.loadURL(require("../resources/webview.html"));
+  browserWindow.loadURL(require("../../resources/webview.html"));
 }
-
-/**
- * Récupère le symbole de la bibliothèque de design-system avec le nom spécifié.
- *
- * @param {string} name - Le nom du symbole à récupérer.
- * @returns {SymbolMaster} Le symbole importé.
- */
-function getLibrarySymbol(name) {
-  const library = sketch
-    .getLibraries()
-    .find((library) => library.name.includes("design-system"));
-
-  const doc = sketch.getSelectedDocument();
-
-  return library
-    .getImportableSymbolReferencesForDocument(doc)
-    .find((ref) => ref.name === name)
-    .import();
-}
-
-/**
- * Récupère le style de calque de la bibliothèque de design-system avec le nom spécifié.
- *
- * @param {string} name - Le nom du style de calque à récupérer.
- * @returns {SharedStyle} Le style de calque importé.
- */
-function getLibraryLayerStyle(name) {
-  const library = sketch
-    .getLibraries()
-    .find((library) => library.name.includes("design-system"));
-
-  const doc = sketch.getSelectedDocument();
-
-  return library
-    .getImportableLayerStyleReferencesForDocument(doc)
-    .find((ref) => ref.name === name)
-    .import();
-}
-
-/**
- * Ajoute un suffixe pluriel à un nom de nom si nécessaire.
- *
- * @param {number} count - Le nombre d'éléments.
- * @param {string} noun - Le nom de l'élément.
- * @param {string} [suffix=s] - Le suffixe à ajouter pour former le pluriel.
- * @returns {string} Le nom de l'élément avec le suffixe pluriel ajouté si nécessaire.
- */
-const pluralize = (count, noun, suffix = "s") =>
-  `${count} ${noun}${count !== 1 ? suffix : ""}`;
 
 /**
  * Créer une nouvelle table dans le document Sketch actif.
@@ -110,7 +65,7 @@ async function createTable(options) {
     colWidth = 200,
     rowPadding = 16,
     colGap = 16,
-    groupByColumn = false
+    groupByColumn = false,
   } = options;
 
   // Get the currently selected document
@@ -155,19 +110,22 @@ async function createTable(options) {
 
     headerLabel.parent = headerGroup;
     headerLabel.frame.width = colWidth;
-    headerLabel.frame.y = headerRow.frame.y + (headerRow.frame.height - headerLabel.frame.height) / 2;
+    headerLabel.frame.y =
+      headerRow.frame.y +
+      (headerRow.frame.height - headerLabel.frame.height) / 2;
     headerLabel.frame.x = i * (headerLabel.frame.width + colGap); // Ajoute un espace de 16px entre chaque cellule
 
-    const labelOverride = headerLabel.overrides.filter((override) =>
-      override.property === "stringValue" &&
-      override.affectedLayer.name.includes("Label")
+    const labelOverride = headerLabel.overrides.filter(
+      (override) =>
+        override.property === "stringValue" &&
+        override.affectedLayer.name.includes("Label")
     )[0];
 
     labelOverride.value = `En-tête ${i + 1}`;
   }
 
-  headerRow.frame.width = colCount * (colWidth + colGap) - colGap + 2 * rowPadding;
-
+  headerRow.frame.width =
+    colCount * (colWidth + colGap) - colGap + 2 * rowPadding;
 
   // Create a group for the rows
   const rowsGroup = new Group({
@@ -236,23 +194,6 @@ async function createTable(options) {
       "colonne"
     )} inséré dans le document ! 👍`
   );
-}
-
-export function registerToolbarActions() {
-  // Ajoute un bouton à la barre d'outils de Sketch
-  const button = sketch.UI.addButton('Mon Plugin', () => {
-    // Code à exécuter lorsque le bouton est cliqué
-    sketch.UI.message('Le bouton a été cliqué !');
-  });
-
-  // Ajoute une icône pour le bouton
-  button.icon = 'icon.svg';
-
-  // Enregistre le plugin
-  sketch.UI.registerCommand('monPlugin', context => {
-    // Code à exécuter lorsque le plugin est appelé
-    sketch.UI.message('Le plugin a été appelé !');
-  });
 }
 
 // When the plugin is shutdown by Sketch (for example when the user disable the plugin)
