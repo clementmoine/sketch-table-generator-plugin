@@ -1,0 +1,23 @@
+.generator {
+  border-spacing: 4px;
+
+  &-cell {
+    padding: 0;
+    line-height: 0;
+
+    &-button {
+      margin: 0;
+      padding: 0;
+      width: 18px;
+      aspect-ratio: 1;
+      appearance: none;
+      border: 1px solid #7d7d7d;
+      background-color: transparent;
+    }
+
+    &--is-active &-button {
+      border-color: #538fd2;
+      background-color: #e9f2fb;
+    }
+  }
+}

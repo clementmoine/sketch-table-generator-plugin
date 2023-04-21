@@ -4,7 +4,7 @@ module.exports = function (config, entry) {
   };
 
   config.resolve = {
-    extensions: ['.ts', '.tsx', '.js', '.json']
+    extensions: ['.ts', '.tsx', '.js', '.jsx', ".css", ".scss"]
   };
 
   config.module.rules.push({
@@ -24,15 +24,15 @@ module.exports = function (config, entry) {
       },
     ]
   })
+
   config.module.rules.push({
     test: /\.(css)$/,
-    use: [{
-        loader: "@skpm/extract-loader",
-      },
-      {
-        loader: "css-loader",
-      },
-    ]
+    use: ["css-loader"]
+  })
+
+  config.module.rules.push({
+    test: /\.scss$/,
+    use: ["style-loader", { loader: 'css-loader', options: { modules: true } }, "sass-loader"]
   })
 
   config.module.rules.push({

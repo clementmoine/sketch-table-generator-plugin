@@ -34,7 +34,9 @@ export default function () {
   });
 
   // Handle messages from the webview
-  browserWindow.webContents.on("nativeLog", (options) => {
+  browserWindow.webContents.on("nativeLog", (log) => {
+    const options = JSON.parse(log);
+
     if (typeof options !== "object") {
       return;
     }
