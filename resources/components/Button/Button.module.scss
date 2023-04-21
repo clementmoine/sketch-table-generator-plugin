@@ -1,0 +1,20 @@
+.button {
+  border: none;
+  appearance: none;
+  outline: none;
+  display: inline-flex;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+
+  &[type="reset"] {
+    color: #262626;
+    background: #ffffff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.19);
+  }
+
+  &[type="submit"] {
+    color: #ffffff;
+    background-image: linear-gradient(180deg, #2773fa 0%, #005bf8 100%);
+  }
+}

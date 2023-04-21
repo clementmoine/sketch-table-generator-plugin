@@ -1,0 +1,11 @@
+.app {
+    gap: 24px;
+    display: flex;
+    flex-direction: column;
+
+    &__footer {
+        gap: 16px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}

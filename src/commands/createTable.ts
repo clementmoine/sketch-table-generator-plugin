@@ -13,8 +13,8 @@ export default function () {
   const options = {
     identifier: webviewIdentifier,
     show: false,
-    width: 240,
-    height: 218,
+    width: 280,
+    height: 457,
     frame: false,
     resizable: false,
     alwaysOnTop: true,
@@ -34,20 +34,18 @@ export default function () {
   });
 
   // Handle messages from the webview
-  browserWindow.webContents.on("nativeLog", (log) => {
-    const options = JSON.parse(log);
+  browserWindow.webContents.on("submit", (options) => {
+    createTable(JSON.parse(options)).then(browserWindow.close);
+  });
 
-    if (typeof options !== "object") {
-      return;
-    }
-
-    createTable(options).then(browserWindow.close);
+  browserWindow.webContents.on("cancel", () => {
+    browserWindow.close();
   });
 
   browserWindow.loadURL(require("../../resources/webview.html"));
 }
 
-type CreateTableOptions = {
+export type CreateTableOptions = {
   rowCount?: number;
   colCount?: number;
   colWidth?: number;

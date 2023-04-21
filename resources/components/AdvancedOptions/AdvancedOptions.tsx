@@ -6,10 +6,10 @@ export interface AdvancedOptionsProps {}
 
 const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
   return (
-    <details style={styles['advance-options']}>
+    <details className={styles['advanced-options']}>
       <summary>Paramètres avancés</summary>
 
-      <div>
+      <div className={styles['advanced-options-content']}>
         <label htmlFor="col-width">Largeur des colonnes :</label>
         <input
           type="number"
