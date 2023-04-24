@@ -14,8 +14,9 @@ export default function () {
     identifier: webviewIdentifier,
     show: false,
     width: 280,
-    height: 457,
+    height: 384,
     frame: false,
+    draggable: true,
     resizable: false,
     alwaysOnTop: true,
     hidesOnDeactivate: true,
@@ -42,29 +43,33 @@ export default function () {
     browserWindow.close();
   });
 
+  browserWindow.webContents.on("resize", (height) => {
+    browserWindow.setSize(options.width, Number(height), false);
+  });
+
   browserWindow.loadURL(require("../../resources/webview.html"));
 }
 
 export type CreateTableOptions = {
-  rowCount?: number;
-  colCount?: number;
-  colWidth?: number;
-  rowPadding?: number;
-  colGap?: number;
+  rowCount?: number | string;
+  colCount?: number | string;
+  colWidth?: number | string;
+  rowPadding?: number | string;
+  colGap?: number | string;
   groupByColumn?: boolean;
-}
+};
 
 /**
  * Créer une nouvelle table dans le document Sketch actif.
  *
  * @async
  * @param {Object} options - Les options de la table.
- * @param {number} [options.rowCount=1] - Le nombre de lignes de la table.
- * @param {number} [options.colCount=1] - Le nombre de colonnes de la table.
- * @param {number} [options.colWidth=200] - La largeur de chaque colonne.
- * @param {number} [options.rowPadding=16] - L'espace de remplissage entre les lignes.
- * @param {number} [options.colGap=16] - L'espace entre les colonnes.
- * @param {number} [options.groupByColumn=false] - Permet de regrouper les cellules par colonnes plutôt que par lignes
+ * @param {number|string} [options.rowCount=1] - Le nombre de lignes de la table.
+ * @param {number|string} [options.colCount=1] - Le nombre de colonnes de la table.
+ * @param {number|string} [options.colWidth=200] - La largeur de chaque colonne.
+ * @param {number|string} [options.rowPadding=16] - L'espace de remplissage entre les lignes.
+ * @param {number|string} [options.colGap=16] - L'espace entre les colonnes.
+ * @param {boolean} [options.groupByColumn=false] - Permet de regrouper les cellules par colonnes plutôt que par lignes
  */
 async function createTable(options: CreateTableOptions): Promise<void> {
   const {
@@ -115,15 +120,15 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   headerRow.parent = headerGroup;
 
   // Create header labels
-  for (let i = 0; i < colCount; i++) {
+  for (let i = 0; i < Number(colCount); i++) {
     const headerLabel = TableHeaderLabelLeftDefault.createNewInstance();
 
     headerLabel.parent = headerGroup;
-    headerLabel.frame.width = colWidth;
+    headerLabel.frame.width = Number(colWidth);
     headerLabel.frame.y =
       headerRow.frame.y +
       (headerRow.frame.height - headerLabel.frame.height) / 2;
-    headerLabel.frame.x = i * (headerLabel.frame.width + colGap); // Ajoute un espace de 16px entre chaque cellule
+    headerLabel.frame.x = i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
     const labelOverride = headerLabel.overrides.filter(
       (override) =>
@@ -135,7 +140,9 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   }
 
   headerRow.frame.width =
-    colCount * (colWidth + colGap) - colGap + 2 * rowPadding;
+    Number(colCount) * (Number(colWidth) + Number(colGap)) -
+    Number(colGap) +
+    2 * Number(rowPadding);
 
   // Create a group for the rows
   const rowsGroup = new Group({
@@ -144,7 +151,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   });
 
   // Create the table rows
-  for (let i = 0; i < rowCount; i++) {
+  for (let i = 0; i < Number(rowCount); i++) {
     // Create a group for the row
     const rowGroup = new Group({
       name: `Row ${i + 1}`,
@@ -177,16 +184,19 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     });
 
     // Crée les cellules de la ligne
-    for (let j = 0; j < colCount; j++) {
+    for (let j = 0; j < Number(colCount); j++) {
       const cell = TableCellDefault.createNewInstance();
       cell.parent = cellsGroup;
-      cell.frame.width = colWidth;
+      cell.frame.width = Number(colWidth);
       cell.frame.y = row.frame.y + (row.frame.height - cell.frame.height) / 2;
-      cell.frame.x = j * (cell.frame.width + colGap); // Ajoute un espace de 16px entre chaque cellule
+      cell.frame.x = j * (cell.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
     }
 
     // Resize the row to fit the cols
-    row.frame.width = colCount * (colWidth + colGap) - colGap + 2 * rowPadding;
+    row.frame.width =
+      Number(colCount) * (Number(colWidth) + Number(colGap)) -
+      Number(colGap) +
+      2 * Number(rowPadding);
 
     cellsGroup.adjustToFit();
     rowGroup.adjustToFit();
@@ -198,8 +208,8 @@ async function createTable(options: CreateTableOptions): Promise<void> {
 
   // Affiche un message pour confirmer la création de la table
   UI.message(
-    `Tableau de ${pluralize(rowCount, "ligne")} et ${pluralize(
-      colCount,
+    `Tableau de ${pluralize(Number(rowCount), "ligne")} et ${pluralize(
+      Number(colCount),
       "colonne"
     )} inséré dans le document ! 👍`
   );

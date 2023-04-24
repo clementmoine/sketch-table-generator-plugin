@@ -1,22 +1,37 @@
-import React, { FC } from "react";
+import React, { FC, useCallback, useState, ChangeEvent } from "react";
 
 import styles from "./AdvancedOptions.module.scss";
 
 export interface AdvancedOptionsProps {}
 
 const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
+  const [values, setValues] = useState<Record<string, string>>({
+    "colWidth": "250",
+  });
+
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.name;
+    const value = e.target.value;
+
+    setValues((v) => ({
+      ...v,
+      [name]: value,
+    }));
+  }, []);
+
   return (
-    <details className={styles['advanced-options']}>
+    <details className={styles["advanced-options"]}>
       <summary>Paramètres avancés</summary>
 
-      <div className={styles['advanced-options-content']}>
-        <label htmlFor="col-width">Largeur des colonnes :</label>
+      <div className={styles["advanced-options-content"]}>
+        <label htmlFor="colWidth">Largeur des colonnes :</label>
         <input
-          type="number"
-          id="col-width"
-          name="col-width"
           min="50"
-          value="250"
+          type="number"
+          id="colWidth"
+          name="colWidth"
+          onChange={handleChange}
+          value={values['colWidth']}
         />
       </div>
     </details>

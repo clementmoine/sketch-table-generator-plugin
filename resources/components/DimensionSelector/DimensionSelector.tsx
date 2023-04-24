@@ -6,17 +6,10 @@ import styles from "./DimensionSelector.module.scss";
 const SELECTOR_HEIGHT = 8;
 const SELECTOR_WIDTH = 10;
 
-export interface DimensionSelectorProps {
-  onChange: (value: { rowCount: number; colCount: number }) => void;
-}
-
-const DimensionSelector: FC<DimensionSelectorProps> = ({ onChange }) => {
+const DimensionSelector: FC = () => {
+  const [values, setValues] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<JSX.Element[] | null>(null);
   const [activeCell, setActiveCell] = useState<{
-    row: number;
-    col: number;
-  } | null>(null);
-  const [selectedCell, setSelectedCell] = useState<{
     row: number;
     col: number;
   } | null>(null);
@@ -39,9 +32,10 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({ onChange }) => {
                   activeCell?.col >= colId &&
                   activeCell?.row >= rowId,
                 [styles["dimension-selector-table-cell--is-selected"]]:
-                  selectedCell &&
-                  selectedCell?.col >= colId &&
-                  selectedCell?.row >= rowId,
+                  values.colCount &&
+                  values.rowCount &&
+                  Number(values.colCount) - 1 >= colId &&
+                  Number(values.rowCount) - 1 >= rowId,
               })}
               onMouseOver={handleMouseOver}
             >
@@ -63,7 +57,7 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({ onChange }) => {
     }
 
     createRows();
-  }, [activeCell, selectedCell]);
+  }, [activeCell, values]);
 
   const handelMouseOut = useCallback(() => {
     setActiveCell(null);
@@ -74,13 +68,11 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({ onChange }) => {
       return;
     }
 
-    setSelectedCell(activeCell);
-
-    onChange({
-      rowCount: activeCell.row + 1,
-      colCount: activeCell.col + 1,
+    setValues({
+      rowCount: (activeCell.row + 1).toString(),
+      colCount: (activeCell.col + 1).toString(),
     });
-  }, [activeCell, onChange]);
+  }, [activeCell]);
 
   const handleMouseOver = (event: MouseEvent<HTMLTableCellElement>) => {
     const cell = event.currentTarget;
@@ -99,13 +91,18 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({ onChange }) => {
         onClick={handleClick}
       >
         <caption className={styles["dimension-selector-table-caption"]}>
-          {(activeCell || selectedCell)
-            ? `Tableau ${(activeCell || selectedCell)!.row + 1}x${(activeCell || selectedCell)!.col + 1}`
+          {activeCell
+            ? `Tableau ${activeCell.row + 1}x${activeCell.col + 1}`
+            : values.rowCount && values.colCount
+            ? `Tableau ${values.rowCount}x${values.colCount}`
             : "Insérer un tableau"}
         </caption>
 
         {rows}
       </table>
+
+      <input name="rowCount" type="number" hidden value={values["rowCount"]} />
+      <input name="colCount" type="number" hidden value={values["colCount"]} />
     </div>
   );
 };

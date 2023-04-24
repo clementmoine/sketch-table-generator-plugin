@@ -43,15 +43,19 @@
         justify-content: center;
       }
   
+      &--is-selected &-button,
       &--is-active &-button {
         border-color: #1266F9;
-        background-color: #CCDCF6;
+        background-color: rgba(#1266F9, 40%);
       }
 
       &--is-selected &-button:after {
-        content: '✓';
+        content: '';
+        // content: '✓';
         color: #1266F9;
         position: absolute;
+        inset: 0;
+        background-color: rgba(#1266F9, 40%);
       }
     }
   }

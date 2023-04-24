@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useEffect } from "react";
 
 import Button from "./components/Button";
 import AdvancedOptions from "./components/AdvancedOptions";
@@ -11,9 +11,20 @@ import Separator from "./components/Separator";
 
 function App() {
   const options = useRef<CreateTableOptions>({});
+  const appRef = useRef<HTMLFormElement>(null);
 
-  const handleSubmit = useCallback(() => {
-    window.postMessage("submit", JSON.stringify(options.current));
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => { 
+    e.preventDefault(); // prevent the form from submitting
+  
+    const formData = new FormData(e.currentTarget); // get the form data
+
+    // create an object from the form data
+    const formValues = Array.from(formData.entries()).reduce(
+      (acc, [name, value]) => ({ ...acc, [name]: value }),
+      {}
+    );
+
+    window.postMessage("submit", JSON.stringify(formValues));
   }, []);
 
   const handleCancel = useCallback(() => {
@@ -27,22 +38,36 @@ function App() {
     },
     []
   );
+  // Add an handle that detects content height changed to run a window.postMessage("resize") to make sure the window is always adjusted to content height (no scroll)
+
+  useEffect(() => {
+    // Send the height in second argument
+    const resizeObserver = new ResizeObserver(() => {
+      const height = appRef.current!.clientHeight;
+
+      window.postMessage("resize", height.toString());
+    });
+
+    resizeObserver.observe(appRef.current!);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   return (
-    <form className={styles["app"]}>
-      <DimensionSelector onChange={onDimensionChange} />
+    <form className={styles["app"]} onSubmit={handleSubmit} ref={appRef}>
+      <main className={styles["app__body"]}>
+        <DimensionSelector />
 
-      <Separator />
+        <Separator />
 
-      <AdvancedOptions />
+        <AdvancedOptions />
+      </main>
 
       <footer className={styles["app__footer"]}>
-        <Button type="reset" onClick={handleCancel}>
-          Annuler
-        </Button>
-        <Button type="submit" onClick={handleSubmit}>
-          Créer
-        </Button>
+        <Button type="reset" onClick={handleCancel} label="Annuler" />
+        <Button type="submit" label="Créer" />
       </footer>
     </form>
   );

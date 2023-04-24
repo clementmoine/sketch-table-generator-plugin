@@ -3,9 +3,20 @@
     display: flex;
     flex-direction: column;
 
+    &__body {
+        margin: 0;
+        padding: 0;
+        gap: 24px;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 16px 0 16px;
+    }
+
     &__footer {
-        gap: 16px;
+        gap: 8px;
+        bottom: 0;
         display: flex;
         justify-content: flex-end;
+        padding: 0 16px 16px 16px;
     }
 }
