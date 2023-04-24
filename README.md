@@ -1,5 +1,8 @@
 # table-generator
 
+<img width="698" alt="image" src="https://user-images.githubusercontent.com/27948112/234042121-4d465362-9efd-4547-b2c6-61d79e7dc4e7.png">
+
+
 ## Installation
 
 - [Download](../../releases/latest/download/table-generator.sketchplugin.zip) the latest release of the plugin
