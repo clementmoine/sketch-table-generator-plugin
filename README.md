@@ -1,4 +1,4 @@
-# table-generator
+# ✨ Sketch Table Generator
 
 <img width="698" alt="image" src="https://user-images.githubusercontent.com/27948112/234042121-4d465362-9efd-4547-b2c6-61d79e7dc4e7.png">
 
