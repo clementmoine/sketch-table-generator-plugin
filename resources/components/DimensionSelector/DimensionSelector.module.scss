@@ -32,30 +32,28 @@
         margin: 0;
         padding: 0;
         width: 18px;
+        display: flex;
         aspect-ratio: 1;
         appearance: none;
-        background: #F6F7F6;
-        border: 1px solid #CCCDCC;
         border-radius: 2px;
         position: relative;
-        display: flex;
         align-items: center;
+        background: #F6F7F6;
         justify-content: center;
-      }
-  
-      &--is-selected &-button,
-      &--is-active &-button {
-        border-color: #1266F9;
-        background-color: rgba(#1266F9, 40%);
+        border: 1px solid #CCCDCC;
       }
 
-      &--is-selected &-button:after {
-        content: '';
-        // content: '✓';
-        color: #1266F9;
-        position: absolute;
+      &--is-active &-button,
+      &--is-selected &-button {
+        border-color: #1266F9;
+      }
+
+      &--is-active &-button:after,
+      &--is-selected &-button:before {
         inset: 0;
-        background-color: rgba(#1266F9, 40%);
+        content: '';
+        position: absolute;
+        background-color: rgba(#1266F9, 20%);
       }
     }
   }
