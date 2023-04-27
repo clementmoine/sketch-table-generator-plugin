@@ -1,5 +1,7 @@
 import React, { FC, useCallback, useState, ChangeEvent } from "react";
 
+import Input from "../Input";
+
 import styles from "./AdvancedOptions.module.scss";
 
 export interface AdvancedOptionsProps {}
@@ -25,7 +27,7 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
 
       <div className={styles["advanced-options-content"]}>
         <label htmlFor="colWidth">Largeur des colonnes :</label>
-        <input
+        <Input
           min="50"
           type="number"
           id="colWidth"
