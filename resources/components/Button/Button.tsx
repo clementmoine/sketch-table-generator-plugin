@@ -37,6 +37,7 @@ const Button: FC<ButtonProps> = (props) => {
         styles['button'],
         className
       )}
+      data-app-region="no-drag"
     >
         {label}
     </button>

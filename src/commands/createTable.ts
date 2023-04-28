@@ -16,6 +16,7 @@ export default function () {
     width: 280,
     height: 384,
     frame: false,
+    center: true,
     draggable: true,
     resizable: false,
     alwaysOnTop: true,
@@ -45,6 +46,7 @@ export default function () {
 
   browserWindow.webContents.on("resize", (height) => {
     browserWindow.setSize(options.width, Number(height), false);
+    browserWindow.center();
   });
 
   browserWindow.loadURL(require("../../resources/webview.html"));
@@ -56,6 +58,8 @@ export type CreateTableOptions = {
   colWidth?: number | string;
   rowPadding?: number | string;
   colGap?: number | string;
+  cellStyleName?: string;
+  cellSymbolName?: string;
   groupByColumn?: boolean;
 };
 
@@ -78,6 +82,8 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     colWidth = 200,
     rowPadding = 16,
     colGap = 16,
+    cellStyleName = "Table/Cell/Default/Transparent",
+    cellSymbolName = "Table/Cell Content/Default/Text",
     groupByColumn = false,
   } = options;
 
@@ -85,14 +91,33 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   const doc = sketch.getSelectedDocument();
 
   // Get the necessary symbols for table creation
-  const [TableRowStandard, TableCellDefault, TableHeaderLabelLeftDefault] =
-    await Promise.all([
-      getLibrarySymbol("Table/Row/Standard"),
-      getLibrarySymbol("Table/Cell/Default"),
-      getLibrarySymbol("Table/Header Label/Left/Default"),
-    ]);
+  const [
+    TableRowStandard,
+    TableCellDefault,
+    TableHeaderLabelLeftDefault,
+    TableCellSymbol,
+    TableCellLayerStyle,
+    TableOddRowStyle,
+    TableEventRowStyle,
+  ] = await Promise.all([
+    getLibrarySymbol("Table/Row/Standard"),
+    getLibrarySymbol("Table/Cell/Default"),
+    getLibrarySymbol("Table/Header Label/Left/Default"),
+    getLibrarySymbol(cellSymbolName),
+    getLibraryLayerStyle(cellStyleName),
+    getLibraryLayerStyle("Table/Row/_Odd (impair)"),
+    getLibraryLayerStyle("Table/Row/_Even (pair)"),
+  ]);
 
-  if (!TableRowStandard || !TableCellDefault || !TableHeaderLabelLeftDefault) {
+  if (
+    !TableRowStandard ||
+    !TableCellDefault ||
+    !TableHeaderLabelLeftDefault ||
+    !TableCellSymbol ||
+    !TableCellLayerStyle ||
+    !TableOddRowStyle ||
+    !TableEventRowStyle
+  ) {
     return;
   }
 
@@ -170,12 +195,10 @@ async function createTable(options: CreateTableOptions): Promise<void> {
         override.affectedLayer.name === "🎨 Background style"
     );
 
-    const styleName =
-      i % 2 === 0 ? "Table/Row/_Odd (impair)" : "Table/Row/_Even (pair)";
-    const rowStyle = getLibraryLayerStyle(styleName);
-
-    if (rowStyleOverride && rowStyle) {
-      rowStyleOverride.value = rowStyle.id;
+    if (rowStyleOverride) {
+      rowStyleOverride.value = (
+        i % 2 === 0 ? TableOddRowStyle : TableEventRowStyle
+      ).id;
     }
 
     const cellsGroup = new Group({
@@ -190,6 +213,27 @@ async function createTable(options: CreateTableOptions): Promise<void> {
       cell.frame.width = Number(colWidth);
       cell.frame.y = row.frame.y + (row.frame.height - cell.frame.height) / 2;
       cell.frame.x = j * (cell.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
+
+      cell.overrides.forEach((override) => {
+        // Affect the CellSymbol to override
+        if (
+          override.property === "symbolID" &&
+          override.affectedLayer.name.includes("Table/Cell Content/Default")
+        ) {
+          override.value = TableCellSymbol.symbolId;
+
+          return;
+        }
+
+        if (
+          (override.property as string) === "layerStyle" &&
+          override.affectedLayer.name === "Cell style"
+        ) {
+          override.value = TableCellLayerStyle.id;
+
+          return;
+        }
+      });
     }
 
     // Resize the row to fit the cols

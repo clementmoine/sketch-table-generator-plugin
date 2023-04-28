@@ -84,7 +84,7 @@ const DimensionSelector: FC = () => {
   };
 
   return (
-    <div className={styles["dimension-selector"]}>
+    <div className={styles["dimension-selector"]} data-app-region="no-drag">
       <table
         className={styles["dimension-selector-table"]}
         onMouseLeave={handelMouseOut}

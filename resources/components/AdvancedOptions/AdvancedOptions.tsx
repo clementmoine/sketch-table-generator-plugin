@@ -3,23 +3,29 @@ import React, { FC, useCallback, useState, ChangeEvent } from "react";
 import Input from "../Input";
 
 import styles from "./AdvancedOptions.module.scss";
+import Select from "../Select";
 
 export interface AdvancedOptionsProps {}
 
 const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
   const [values, setValues] = useState<Record<string, string>>({
-    "colWidth": "250",
+    colWidth: "250",
+    cellSymbolName: "Table/Cell Content/Default/Text",
+    cellStyleName: "Table/Cell/Default/Transparent",
   });
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.name;
-    const value = e.target.value;
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const name = e.target.name;
+      const value = e.target.value;
 
-    setValues((v) => ({
-      ...v,
-      [name]: value,
-    }));
-  }, []);
+      setValues((v) => ({
+        ...v,
+        [name]: value,
+      }));
+    },
+    []
+  );
 
   return (
     <details className={styles["advanced-options"]}>
@@ -33,7 +39,53 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           id="colWidth"
           name="colWidth"
           onChange={handleChange}
-          value={values['colWidth']}
+          value={values["colWidth"]}
+        />
+
+        <label>Contenu des cellules</label>
+        <Select
+          name="cellSymbolName"
+          onChange={handleChange}
+          value={values["cellSymbolName"]}
+          options={[
+            {
+              label: "Dropdown list",
+              value: "Table/Cell Content/Default/Dropdown list",
+            },
+            {
+              label: "Text",
+              value: "Table/Cell Content/Default/Text",
+            },
+          ]}
+        />
+
+        <label>Style des cellules</label>
+        <Select
+          name="cellStyleName"
+          onChange={handleChange}
+          value={values["cellStyleName"]}
+          options={[
+            {
+              label: "Default",
+              value: "Table/Cell/Default/Default",
+            },
+            {
+              label: "Disabled",
+              value: "Table/Cell/Default/Disabled",
+            },
+            {
+              label: "Error",
+              value: "Table/Cell/Default/Error",
+            },
+            {
+              label: "Focus",
+              value: "Table/Cell/Default/Focus",
+            },
+            {
+              label: "Transparent",
+              value: "Table/Cell/Default/Transparent",
+            },
+          ]}
         />
       </div>
     </details>

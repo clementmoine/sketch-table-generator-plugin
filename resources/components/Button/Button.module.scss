@@ -1,11 +1,12 @@
 .button {
   border: none;
-  appearance: none;
   outline: none;
-  display: inline-flex;
-  padding: 8px 12px;
+  cursor: pointer;
   font-size: 12px;
+  appearance: none;
+  padding: 8px 12px;
   border-radius: 8px;
+  display: inline-flex;
 
   &[type="reset"] {
     color: #262626;
