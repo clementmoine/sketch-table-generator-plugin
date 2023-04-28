@@ -9,7 +9,8 @@ export interface AdvancedOptionsProps {}
 
 const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
   const [values, setValues] = useState<Record<string, string>>({
-    colWidth: "250",
+    rowHeight: "56",
+    cellWidth: "250",
     cellSymbolName: "Table/Cell Content/Default/Text",
     cellStyleName: "Table/Cell/Default/Transparent",
   });
@@ -32,14 +33,24 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
       <summary>Paramètres avancés</summary>
 
       <div className={styles["advanced-options-content"]}>
-        <label htmlFor="colWidth">Largeur des colonnes :</label>
+        <label htmlFor="cellWidth">Largeur des cellules :</label>
         <Input
           min="50"
           type="number"
-          id="colWidth"
-          name="colWidth"
+          id="cellWidth"
+          name="cellWidth"
           onChange={handleChange}
-          value={values["colWidth"]}
+          value={values["cellWidth"]}
+        />
+
+        <label htmlFor="rowHeight">Hauteur des lignes :</label>
+        <Input
+          min="56"
+          type="number"
+          id="rowHeight"
+          name="rowHeight"
+          onChange={handleChange}
+          value={values["rowHeight"]}
         />
 
         <label>Contenu des cellules</label>

@@ -46,16 +46,16 @@ export default function () {
 
   browserWindow.webContents.on("resize", (height) => {
     browserWindow.setSize(options.width, Number(height), false);
-    browserWindow.center();
   });
 
   browserWindow.loadURL(require("../../resources/webview.html"));
 }
 
 export type CreateTableOptions = {
+  rowHeight?: number | string;
   rowCount?: number | string;
   colCount?: number | string;
-  colWidth?: number | string;
+  cellWidth?: number | string;
   rowPadding?: number | string;
   colGap?: number | string;
   cellStyleName?: string;
@@ -77,11 +77,12 @@ export type CreateTableOptions = {
  */
 async function createTable(options: CreateTableOptions): Promise<void> {
   const {
+    colGap = 16,
     rowCount = 1,
     colCount = 1,
-    colWidth = 200,
+    rowHeight = 56,
+    cellWidth = 200,
     rowPadding = 16,
-    colGap = 16,
     cellStyleName = "Table/Cell/Default/Transparent",
     cellSymbolName = "Table/Cell Content/Default/Text",
     groupByColumn = false,
@@ -141,6 +142,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
 
   // Create the table header
   const headerRow = TableRowStandard.createNewInstance();
+  headerRow.frame.height = Number(rowHeight);
   headerRow.frame.x = -rowPadding;
   headerRow.parent = headerGroup;
 
@@ -149,7 +151,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     const headerLabel = TableHeaderLabelLeftDefault.createNewInstance();
 
     headerLabel.parent = headerGroup;
-    headerLabel.frame.width = Number(colWidth);
+    headerLabel.frame.width = Number(cellWidth);
     headerLabel.frame.y =
       headerRow.frame.y +
       (headerRow.frame.height - headerLabel.frame.height) / 2;
@@ -165,7 +167,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   }
 
   headerRow.frame.width =
-    Number(colCount) * (Number(colWidth) + Number(colGap)) -
+    Number(colCount) * (Number(cellWidth) + Number(colGap)) -
     Number(colGap) +
     2 * Number(rowPadding);
 
@@ -185,6 +187,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
 
     const row = TableRowStandard.createNewInstance();
     row.frame.x = -rowPadding;
+    row.frame.height = Number(rowHeight);
     row.frame.y = (i + 1) * row.frame.height;
     row.parent = rowGroup;
 
@@ -210,7 +213,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     for (let j = 0; j < Number(colCount); j++) {
       const cell = TableCellDefault.createNewInstance();
       cell.parent = cellsGroup;
-      cell.frame.width = Number(colWidth);
+      cell.frame.width = Number(cellWidth);
       cell.frame.y = row.frame.y + (row.frame.height - cell.frame.height) / 2;
       cell.frame.x = j * (cell.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
@@ -238,7 +241,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
 
     // Resize the row to fit the cols
     row.frame.width =
-      Number(colCount) * (Number(colWidth) + Number(colGap)) -
+      Number(colCount) * (Number(cellWidth) + Number(colGap)) -
       Number(colGap) +
       2 * Number(rowPadding);
 
