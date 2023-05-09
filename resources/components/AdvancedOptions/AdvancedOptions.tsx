@@ -30,7 +30,7 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
 
   return (
     <details className={styles["advanced-options"]}>
-      <summary>Paramètres avancés</summary>
+      <summary data-app-region="no-drag">Paramètres avancés</summary>
 
       <div className={styles["advanced-options-content"]}>
         <label htmlFor="cellWidth">Largeur des cellules :</label>
@@ -53,8 +53,9 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           value={values["rowHeight"]}
         />
 
-        <label>Contenu des cellules</label>
+        <label htmlFor="cellSymbolName">Contenu des cellules</label>
         <Select
+          id="cellSymbolName"
           name="cellSymbolName"
           onChange={handleChange}
           value={values["cellSymbolName"]}
@@ -70,8 +71,9 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           ]}
         />
 
-        <label>Style des cellules</label>
+        <label htmlFor="cellStyleName">Style des cellules</label>
         <Select
+          id="cellStyleName"
           name="cellStyleName"
           onChange={handleChange}
           value={values["cellStyleName"]}

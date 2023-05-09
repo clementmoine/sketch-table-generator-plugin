@@ -90,7 +90,7 @@ const DimensionSelector: FC = () => {
         onMouseLeave={handelMouseOut}
         onClick={handleClick}
       >
-        <caption className={styles["dimension-selector-table-caption"]}>
+        <caption className={styles["dimension-selector-table-caption"]} data-app-region="drag">
           {activeCell
             ? `Tableau ${activeCell.row + 1}x${activeCell.col + 1}`
             : values.rowCount && values.colCount
