@@ -44,8 +44,15 @@ export default function () {
     browserWindow.close();
   });
 
-  browserWindow.webContents.on("resize", (height) => {
-    browserWindow.setSize(options.width, Number(height), false);
+  browserWindow.webContents.on("resize", (newHeight: string) => {
+    const [width, height] = browserWindow.getSize()
+    const [x, y] = browserWindow.getPosition()
+
+    // Resize the window
+    browserWindow.setSize(options.width, Number(newHeight), false);
+
+    // Adjust the window position to keep a consistent x and y position
+    browserWindow.setPosition(x, y + Number(newHeight) - height, false);
   });
 
   browserWindow.loadURL(require("../../resources/webview.html"));
