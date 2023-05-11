@@ -1,9 +1,9 @@
-import React, { FC, useCallback, useState, ChangeEvent } from "react";
+import React, { FC, useCallback, useState } from "react";
 
-import Input from "../Input";
+import Input, { InputProps } from "../Input";
+import Select, { SelectProps } from "../Select";
 
 import styles from "./AdvancedOptions.module.scss";
-import Select from "../Select";
 
 export interface AdvancedOptionsProps {}
 
@@ -15,46 +15,50 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
     cellStyleName: "Table/Cell/Default/Transparent",
   });
 
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const name = e.target.name;
-      const value = e.target.value;
+  const handleChange = useCallback<
+    NonNullable<SelectProps["onChange"] & InputProps["onChange"]>
+  >((value, input) => {
+    if (!input.name) {
+      return;
+    }
 
-      setValues((v) => ({
-        ...v,
-        [name]: value,
-      }));
-    },
-    []
-  );
+    const { name } = input;
+
+    setValues((v) => ({
+      ...v,
+      [name]: value as string,
+    }));
+  }, []);
 
   return (
     <details className={styles["advanced-options"]}>
       <summary data-app-region="no-drag">Paramètres avancés</summary>
 
       <div className={styles["advanced-options-content"]}>
-        <label htmlFor="cellWidth">Largeur des cellules :</label>
         <Input
           min="50"
           type="number"
           id="cellWidth"
           name="cellWidth"
+          direction="vertical"
           onChange={handleChange}
+          label="Largeur des cellules :"
           value={values["cellWidth"]}
         />
 
-        <label htmlFor="rowHeight">Hauteur des lignes :</label>
         <Input
           min="56"
           type="number"
           id="rowHeight"
           name="rowHeight"
+          direction="vertical"
           onChange={handleChange}
+          label="Hauteur des lignes :"
           value={values["rowHeight"]}
         />
 
-        <label htmlFor="cellSymbolName">Contenu des cellules</label>
         <Select
+          label="Contenu des cellules"
           id="cellSymbolName"
           name="cellSymbolName"
           onChange={handleChange}
@@ -71,11 +75,11 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           ]}
         />
 
-        <label htmlFor="cellStyleName">Style des cellules</label>
         <Select
           id="cellStyleName"
           name="cellStyleName"
           onChange={handleChange}
+          label="Style des cellules"
           value={values["cellStyleName"]}
           options={[
             {

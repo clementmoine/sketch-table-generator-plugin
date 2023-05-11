@@ -1,7 +1,7 @@
 import UI from "sketch/ui";
 import sketch from "sketch";
 import { Page, Group } from "sketch/dom";
-import BrowserWindow from "sketch-module-web-view";
+import BrowserWindow, { BrowserWindowOptions } from "sketch-module-web-view";
 
 import getLibraryLayerStyle from "../utils/getLibraryLayerStyle";
 import getLibrarySymbol from "../utils/getLibrarySymbol";
@@ -10,14 +10,13 @@ import pluralize from "../utils/pluralize";
 const webviewIdentifier = "table-generator.webview";
 
 export default function () {
-  const options = {
+  const options: BrowserWindowOptions = {
     identifier: webviewIdentifier,
     show: false,
     width: 280,
     height: 384,
     frame: false,
     center: true,
-    draggable: true,
     resizable: false,
     alwaysOnTop: true,
     hidesOnDeactivate: true,
@@ -45,7 +44,11 @@ export default function () {
   });
 
   browserWindow.webContents.on("resize", (newHeight: string) => {
-    const [width, height] = browserWindow.getSize()
+    if (!options.width) {
+      return;
+    }
+
+    const [, height] = browserWindow.getSize()
     const [x, y] = browserWindow.getPosition()
 
     // Resize the window

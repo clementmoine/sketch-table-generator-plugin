@@ -1,84 +1,174 @@
-import React, { useRef } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import classNames from "classnames";
 
 import styles from "./Input.module.scss";
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+  label?: string;
+  value?: string;
+  inputClassName?: InputProps['className'];
+  direction?: "horizontal" | "vertical";
+  onChange?: (value: InputProps["value"], select: InputProps) => void;
+}
 
-const Input: React.FC<InputProps> = (props) => {
-  const { className, onKeyDown, type = "text", ...restProps } = props;
+const Input: React.FC<InputProps> = ({initialValue, ...props}) => {
+  const [value, setValue] = useState<InputProps["value"]>(props.value|| "");
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    setValue(props.value || "");
+  }, [props.value]);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      type === "number" &&
-      (event.key === "ArrowUp" || event.key === "ArrowDown")
-    ) {
+  useEffect(() => {
+    if (props.onChange && (props.value || "") != value) {
+      props.onChange(value || "", props);
+    }
+  }, [value]);
+  
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (props.type === 'number' && event.target.value == undefined) {
+        let value = parseFloat(event.target.value) || 0;
+
+        if (props.max !== undefined) {
+          value = Math.min(value, Number(props.max));
+        }
+  
+        if (props.min !== undefined) {
+          value = Math.max(value, Number(props.min));
+        }
+
+        setValue(value.toString());
+
+        return;
+      }
+
+  
+      setValue(event.target.value);
+    },
+    [props.max, props.min]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (
+        props.type === "number" &&
+        (event.key === "ArrowUp" || event.key === "ArrowDown")
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const isIncrement = event.key === "ArrowUp";
+
+        const currentValue = parseFloat(value || "0");
+        const increment = (isIncrement ? 1 : -1) * (event.shiftKey ? 10 : 1);
+
+        let newValue = currentValue + increment;
+
+        if (props.max !== undefined) {
+          newValue = Math.min(newValue, Number(props.max));
+        }
+  
+        if (props.min !== undefined) {
+          newValue = Math.max(newValue, Number(props.min));
+        }
+
+        setValue(newValue.toString());
+      }
+
+      if (props.onKeyDown) {
+        props.onKeyDown(event);
+      }
+    },
+    [props.type, value, props.onKeyDown, props.max, props.min]
+  );
+
+  const handleArrowClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
-      event.stopPropagation();
 
-      const isIncrement = event.key === "ArrowUp";
+      const stepCount = event.shiftKey ? 10 : Number(props.step) || 1;
 
-      const value = parseFloat(inputRef.current?.value || "0");
-      const increment = (isIncrement ? 1 : -1) * (event.shiftKey ? 10 : 1);
+      if (event.currentTarget.dataset.step === "up") {
+        setValue((prevValue) => {
+          let newValue = (parseFloat(prevValue || "0") + stepCount);
 
-      inputRef.current!.value = (value + increment).toString();
-    }
+          if (props.max !== undefined) {
+            newValue = Math.min(newValue, Number(props.max));
+          }
+    
+          if (props.min !== undefined) {
+            newValue = Math.max(newValue, Number(props.min));
+          }
 
-    if (onKeyDown) {
-      onKeyDown(event);
-    }
-  };
+          return newValue.toString();
+        });
+      } else {
+        setValue((prevValue) => {
+          let newValue = (parseFloat(prevValue || "0") - stepCount);
 
-  const handleArrowClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+          if (props.max !== undefined) {
+            newValue = Math.min(newValue, Number(props.max));
+          }
+    
+          if (props.min !== undefined) {
+            newValue = Math.max(newValue, Number(props.min));
+          }
 
-    const isIncrement =
-      event.currentTarget.getAttribute("data-action") === "increment";
-
-    const value = parseFloat(inputRef.current?.value || "0");
-    const increment = (isIncrement ? 1 : -1) * (event.shiftKey ? 10 : 1);
-
-    inputRef.current!.value = (value + increment).toString();
-  };
+          return newValue.toString();
+        });
+      }
+    },
+    []
+  );
 
   return (
-    <div className={styles["input-container"]} data-app-region="no-drag">
-      <input
-        {...restProps}
-        ref={inputRef}
-        type={type}
-        onKeyDown={handleKeyDown}
-        className={classNames(styles["input"], className)}
-      />
+    <div
+      hidden={props.hidden}
+      className={classNames(styles["input-field"], props.className, {
+        [styles[`input-field--is-${props.direction}`]]: !!props.direction,
+      })}
+      data-app-region="no-drag"
+    >
+      <label className={styles["input-label"]} htmlFor={props.id || props.name}>
+        {props.label}
+      </label>
 
-      <div className={classNames(styles["input-addons"], styles["input-addons-left"])}>
-        {/* Input number addons */}
-        {type === "number" && (
-          <div className={styles["input-number-buttons"]}>
-            <button
-              type="button"
-              data-action="decrement"
-              onClick={handleArrowClick}
-              className={styles["input--type-number-buttons-item"]}
-            >
-              -
-            </button>
-            <button
-              type="button"
-              data-action="increment"
-              onClick={handleArrowClick}
-              className={styles["input--type-number-buttons-item"]}
-            >
-              +
-            </button>
-          </div>
-        )}
+      <div className={styles["input-container"]}>
+        <input
+          {...props}
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          id={props.id || props.name}
+          className={classNames(styles["input"], props.inputClassName)}
+        />
+        <div
+          className={classNames(
+            styles["input-addons"],
+            styles["input-addons-left"]
+          )}
+        >
+          {/* Input number addons */}
+          {props.type === "number" && (
+            <div className={styles["step-buttons"]}>
+              <button type="button" data-step="up" onClick={handleArrowClick}>
+                +
+              </button>
+              <button type="button" data-step="down" onClick={handleArrowClick}>
+                -
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+};
+
+Input.defaultProps = {
+  direction: "vertical",
+  type: "text",
 };
 
 Input.displayName = "Input";
