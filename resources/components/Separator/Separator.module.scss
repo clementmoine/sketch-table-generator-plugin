@@ -1,12 +1,17 @@
 .separator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    &::after, &::before {
-        flex: 1;
-        content: '';
-        height: 1px;
-        background-color: #D6D7D6;
+  &::after,
+  &::before {
+    flex: 1;
+    content: "";
+    height: 1px;
+    background-color: #d6d7d6;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: #575856;
     }
+  }
 }

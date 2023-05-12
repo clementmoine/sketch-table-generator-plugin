@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import classNames from "classnames";
 
+import Button from "../Button";
+
 import styles from "./Input.module.scss";
 
 export interface InputProps
@@ -175,12 +177,12 @@ const Input: React.FC<InputProps> = ({initialValue, ...props}) => {
           {/* Input number addons */}
           {props.type === "number" && (
             <div className={styles["step-buttons"]}>
-              <button type="button" data-step="up" onClick={handleArrowClick}>
+              <Button type="button" data-step="up" onClick={handleArrowClick}>
                 +
-              </button>
-              <button type="button" data-step="down" onClick={handleArrowClick}>
+              </Button>
+              <Button type="button" data-step="down" onClick={handleArrowClick}>
                 -
-              </button>
+              </Button>
             </div>
           )}
         </div>

@@ -5,8 +5,14 @@
   position: relative;
   border-radius: 8px;
   align-items: center;
-  background: #E1E2E1;
+  background: #e1e2e1;
   justify-content: center;
+  box-shadow: inset 0 0 6px -4px rgba(0, 0, 0, 0.5);
+
+  @media (prefers-color-scheme: dark) {
+    background-color: #4b4b4a;
+    box-shadow: 0 0 0 1px #5E5E5D;
+  }
 
   &-input {
     width: 0;
@@ -15,8 +21,6 @@
     overflow: hidden;
     position: absolute;
   }
-
-  box-shadow: inset 0 0 6px -4px rgba(0,0,0,0.50);
 
   &-table {
     margin: -2px;
@@ -31,12 +35,16 @@
       position: absolute;
       top: -28px;
       left: 0;
+
+      @media (prefers-color-scheme: dark) {
+        color: #ACACAB;
+      }
     }
 
     &-cell {
       padding: 2px;
       line-height: 0;
-  
+
       &-button {
         margin: 0;
         padding: 0;
@@ -47,22 +55,35 @@
         border-radius: 2px;
         position: relative;
         align-items: center;
-        background: #F6F7F6;
         justify-content: center;
-        border: 1px solid #CCCDCC;
+        background-color: #f6f7f6;
+        border: 1px solid #cccdcc;
+
+        @media (prefers-color-scheme: dark) {
+          background-color: #404040;
+          border-color: #646464;  
+        }
       }
 
       &--is-active &-button,
       &--is-selected &-button {
-        border-color: #1266F9;
+        border-color: #1266f9;
+
+        @media (prefers-color-scheme: dark) {
+          border-color: #4287ff;  
+        }
       }
 
       &--is-active &-button:after,
       &--is-selected &-button:before {
         inset: 0;
-        content: '';
+        content: "";
         position: absolute;
-        background-color: rgba(#1266F9, 20%);
+        background-color: rgba(#1266f9, 20%);
+
+        @media (prefers-color-scheme: dark) {
+          background-color: rgba(#75a7ff, 30%);
+        }
       }
     }
   }

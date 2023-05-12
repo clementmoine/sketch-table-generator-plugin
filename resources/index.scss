@@ -52,7 +52,13 @@ table {
 /* General styles */
 
 ::selection {
+  color: #000000;
   background-color: #BED3FA;
+
+  @media (prefers-color-scheme: dark) {
+    color: #FFFFFF;
+    background-color: #41668B;
+  }
 }
 
 html {
@@ -67,7 +73,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   user-select: none;
   overflow: hidden;
+  color: #252524;
   -webkit-user-select: none;
+  background-color: #E4E4E3;
+
+  @media (prefers-color-scheme: dark) {
+    color: #E3E3E3;
+    background-color: #454544;
+  }
 }
 
 h1 {
