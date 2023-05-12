@@ -49,6 +49,28 @@ const Input: React.FC<InputProps> = ({initialValue, ...props}) => {
     [props.max, props.min]
   );
 
+  const handleBlur = useCallback((event: React.FocusEvent) => {
+    if (props.type === "number") {
+      const input = event.currentTarget as HTMLInputElement;
+      
+      if (input.value == undefined) {
+        return;
+      }
+
+      let newValue = parseFloat(input.value) || 0;
+
+      if (props.max !== undefined) {
+        newValue = Math.min(newValue, Number(props.max));
+      }
+
+      if (props.min !== undefined) {
+        newValue = Math.max(newValue, Number(props.min));
+      }
+
+      setValue(newValue.toString());
+    }
+  }, []);
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (
@@ -138,6 +160,7 @@ const Input: React.FC<InputProps> = ({initialValue, ...props}) => {
         <input
           {...props}
           value={value}
+          onBlur={handleBlur}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           id={props.id || props.name}

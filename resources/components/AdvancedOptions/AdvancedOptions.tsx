@@ -36,7 +36,7 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
 
       <div className={styles["advanced-options-content"]}>
         <Input
-          min="50"
+          min="16"
           type="number"
           id="cellWidth"
           name="cellWidth"
@@ -47,7 +47,7 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
         />
 
         <Input
-          min="56"
+          min="16"
           type="number"
           id="rowHeight"
           name="rowHeight"
