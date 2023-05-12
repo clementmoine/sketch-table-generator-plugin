@@ -167,11 +167,15 @@ async function createTable(options: CreateTableOptions): Promise<void> {
       (headerRow.frame.height - headerLabel.frame.height) / 2;
     headerLabel.frame.x = i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
-    const labelOverride = headerLabel.overrides.filter(
+    const labelOverride = headerLabel.overrides.find(
       (override) =>
         override.property === "stringValue" &&
         override.affectedLayer.name.includes("Label")
-    )[0];
+    );
+
+    if (!labelOverride) {
+      return;
+    }
 
     labelOverride.value = `En-tête ${i + 1}`;
   }
@@ -227,26 +231,35 @@ async function createTable(options: CreateTableOptions): Promise<void> {
       cell.frame.y = row.frame.y + (row.frame.height - cell.frame.height) / 2;
       cell.frame.x = j * (cell.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
-      cell.overrides.forEach((override) => {
-        // Affect the CellSymbol to override
-        if (
-          override.property === "symbolID" &&
-          override.affectedLayer.name.includes("Table/Cell Content/Default")
-        ) {
-          override.value = TableCellSymbol.symbolId;
+      // Affect the cell symbol
+      const tableCellSymbolOverride = cell.overrides.find((override) => (
+        override.property === "symbolID" &&
+        override.affectedLayer.name.includes("Table/Cell Content/Default")
+      ));
 
-          return;
-        }
+      if (tableCellSymbolOverride) {
+        tableCellSymbolOverride.value = TableCellSymbol.symbolId;
+      }
 
-        if (
-          (override.property as string) === "layerStyle" &&
-          override.affectedLayer.name === "Cell style"
-        ) {
-          override.value = TableCellLayerStyle.id;
+      // Affect the cell style
+      const tableCellLayerStyleOverride = cell.overrides.find((override) => (
+        (override.property as string) === "layerStyle" &&
+        override.affectedLayer.name === "Cell style"
+      ));
 
-          return;
-        }
-      });
+      if (tableCellLayerStyleOverride) {
+        tableCellLayerStyleOverride.value = TableCellLayerStyle.id;
+      }
+
+      // Affect the cell value
+      const tableCellValueOverride = cell.overrides.find((override) => (
+        (override.property as string) === "stringValue" &&
+        override.affectedLayer.name.match(/text/i)
+      ));
+
+      if (tableCellValueOverride) {
+        tableCellValueOverride.value = `Cellule ${i + 1}:${j + 1}`;
+      }
     }
 
     // Resize the row to fit the cols
