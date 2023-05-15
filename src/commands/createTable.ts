@@ -1,16 +1,19 @@
 import UI from "sketch/ui";
-import sketch from "sketch";
-import { Page, Group } from "sketch/dom";
+import { Group } from "sketch/dom";
+import sketch, { Settings } from "sketch";
 import BrowserWindow, { BrowserWindowOptions } from "sketch-module-web-view";
 
 import getLibraryLayerStyle from "../utils/getLibraryLayerStyle";
 import getLibrarySymbol from "../utils/getLibrarySymbol";
 import pluralize from "../utils/pluralize";
 
-const webviewIdentifier = "table-generator.webview";
+import { webviewIdentifier } from "../config";
+
+import Options from "../../resources/types/options.types";
+import { defaultOptions } from "../../resources/types/options.defaults";
 
 export default function () {
-  const options: BrowserWindowOptions = {
+  const browserWindow = new BrowserWindow({
     identifier: webviewIdentifier,
     show: false,
     width: 280,
@@ -20,9 +23,7 @@ export default function () {
     resizable: false,
     alwaysOnTop: true,
     hidesOnDeactivate: true,
-  };
-
-  const browserWindow = new BrowserWindow(options);
+  });
 
   // only show the window when the page has loaded to avoid a white flash
   browserWindow.once("ready-to-show", () => {
@@ -30,9 +31,9 @@ export default function () {
   });
 
   // close the modal on blur
-  browserWindow.on("blur", () => {
-    browserWindow.close();
-  });
+  // browserWindow.on("blur", () => {
+  //   browserWindow.close();
+  // });
 
   // Handle messages from the webview
   browserWindow.webContents.on("submit", (options) => {
@@ -44,15 +45,11 @@ export default function () {
   });
 
   browserWindow.webContents.on("resize", (newHeight: string) => {
-    if (!options.width) {
-      return;
-    }
-
-    const [, height] = browserWindow.getSize()
-    const [x, y] = browserWindow.getPosition()
+    const [, height] = browserWindow.getSize();
+    const [x, y] = browserWindow.getPosition();
 
     // Resize the window
-    browserWindow.setSize(options.width, Number(newHeight), false);
+    browserWindow.setSize(browserWindow.getSize()[0], Number(newHeight), false);
 
     // Adjust the window position to keep a consistent x and y position
     browserWindow.setPosition(x, y + Number(newHeight) - height, false);
@@ -61,41 +58,57 @@ export default function () {
   browserWindow.loadURL(require("../../resources/webview.html"));
 }
 
-export type CreateTableOptions = {
-  rowHeight?: number | string;
-  rowCount?: number | string;
-  colCount?: number | string;
-  cellWidth?: number | string;
-  rowPadding?: number | string;
-  colGap?: number | string;
-  cellStyleName?: string;
-  cellSymbolName?: string;
-  groupByColumn?: boolean;
-};
+// Listen the selection change
+export function onSelectionChanged() {
+  const browserWindow = BrowserWindow.fromId(webviewIdentifier);
+
+  if (!browserWindow) {
+    return;
+  }
+
+  // Get the currently selected document
+  const doc = sketch.getSelectedDocument();
+
+  // Try to get the currently selected table
+  const selectedTable = doc?.selectedLayers.layers.find(
+    (layer) => sketch.Settings.layerSettingForKey(layer, "type") === "table"
+  );
+
+  if (!selectedTable) {
+    return;
+  }
+
+  // Try to get the options from the selected table
+  const options = sketch.Settings.layerSettingForKey(selectedTable, "options");
+
+  if (!options) {
+    return;
+  }
+
+  // Send the options to the webview
+  browserWindow.webContents.executeJavaScript(
+    `setOptions(${JSON.stringify(options)})`
+  );
+}
 
 /**
- * Créer une nouvelle table dans le document Sketch actif.
+ * Create a new table
  *
  * @async
- * @param {Object} options - Les options de la table.
- * @param {number|string} [options.rowCount=1] - Le nombre de lignes de la table.
- * @param {number|string} [options.colCount=1] - Le nombre de colonnes de la table.
- * @param {number|string} [options.colWidth=200] - La largeur de chaque colonne.
- * @param {number|string} [options.rowPadding=16] - L'espace de remplissage entre les lignes.
- * @param {number|string} [options.colGap=16] - L'espace entre les colonnes.
- * @param {boolean} [options.groupByColumn=false] - Permet de regrouper les cellules par colonnes plutôt que par lignes
+ * @param {Options} options - Les options de la table.
  */
-async function createTable(options: CreateTableOptions): Promise<void> {
+async function createTable(options: Options = defaultOptions): Promise<void> {
   const {
-    colGap = 16,
-    rowCount = 1,
-    colCount = 1,
-    rowHeight = 56,
-    cellWidth = 200,
-    rowPadding = 16,
-    cellStyleName = "Table/Cell/Default/Transparent",
-    cellSymbolName = "Table/Cell Content/Default/Text",
-    groupByColumn = false,
+    libraryName = defaultOptions.libraryName,
+    rowHeight = defaultOptions.rowHeight,
+    rowCount = defaultOptions.rowCount,
+    colCount = defaultOptions.colCount,
+    cellWidth = defaultOptions.cellWidth,
+    rowPadding = defaultOptions.rowPadding,
+    colGap = defaultOptions.colGap,
+    cellStyleName = defaultOptions.cellStyleName,
+    cellSymbolName = defaultOptions.cellSymbolName,
+    groupByColumn = defaultOptions.groupByColumn,
   } = options;
 
   // Get the currently selected document
@@ -111,16 +124,17 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     TableOddRowStyle,
     TableEventRowStyle,
   ] = await Promise.all([
-    getLibrarySymbol("Table/Row/Standard"),
-    getLibrarySymbol("Table/Cell/Default"),
-    getLibrarySymbol("Table/Header Label/Left/Default"),
-    getLibrarySymbol(cellSymbolName),
-    getLibraryLayerStyle(cellStyleName),
-    getLibraryLayerStyle("Table/Row/_Odd (impair)"),
-    getLibraryLayerStyle("Table/Row/_Even (pair)"),
+    getLibrarySymbol(libraryName, "Table/Row/Standard"),
+    getLibrarySymbol(libraryName, "Table/Cell/Default"),
+    getLibrarySymbol(libraryName, "Table/Header Label/Left/Default"),
+    getLibrarySymbol(libraryName, cellSymbolName),
+    getLibraryLayerStyle(libraryName, cellStyleName),
+    getLibraryLayerStyle(libraryName, "Table/Row/_Odd (impair)"),
+    getLibraryLayerStyle(libraryName, "Table/Row/_Even (pair)"),
   ]);
 
   if (
+    !doc ||
     !TableRowStandard ||
     !TableCellDefault ||
     !TableHeaderLabelLeftDefault ||
@@ -132,16 +146,10 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     return;
   }
 
-  // Create a new page for the table
-  const page = new Page({
-    name: "Table",
-    parent: doc,
-  });
-
   // Create a group for the table
   const tableGroup = new Group({
     name: "Table",
-    parent: page as any,
+    parent: doc.selectedPage as any,
   });
 
   // Create a group for the header
@@ -153,7 +161,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   // Create the table header
   const headerRow = TableRowStandard.createNewInstance();
   headerRow.frame.height = Number(rowHeight);
-  headerRow.frame.x = -rowPadding;
+  headerRow.frame.x = -Number(rowPadding);
   headerRow.parent = headerGroup;
 
   // Create header labels
@@ -165,7 +173,8 @@ async function createTable(options: CreateTableOptions): Promise<void> {
     headerLabel.frame.y =
       headerRow.frame.y +
       (headerRow.frame.height - headerLabel.frame.height) / 2;
-    headerLabel.frame.x = i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
+    headerLabel.frame.x =
+      i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
     const labelOverride = headerLabel.overrides.find(
       (override) =>
@@ -181,11 +190,11 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   }
 
   headerRow.frame.width =
-    Number(colCount) * (Number(cellWidth) + Number(colGap)) -
+    Number(colCount) *
+      (Number(cellWidth) + Number(colGap)) -
     Number(colGap) +
     2 * Number(rowPadding);
 
-  // Create a group for the rows
   const rowsGroup = new Group({
     name: "Rows",
     parent: tableGroup,
@@ -193,14 +202,13 @@ async function createTable(options: CreateTableOptions): Promise<void> {
 
   // Create the table rows
   for (let i = 0; i < Number(rowCount); i++) {
-    // Create a group for the row
     const rowGroup = new Group({
       name: `Row ${i + 1}`,
       parent: rowsGroup,
     });
 
     const row = TableRowStandard.createNewInstance();
-    row.frame.x = -rowPadding;
+    row.frame.x = -Number(rowPadding);
     row.frame.height = Number(rowHeight);
     row.frame.y = (i + 1) * row.frame.height;
     row.parent = rowGroup;
@@ -223,7 +231,7 @@ async function createTable(options: CreateTableOptions): Promise<void> {
       parent: rowGroup,
     });
 
-    // Crée les cellules de la ligne
+    // Create the cells
     for (let j = 0; j < Number(colCount); j++) {
       const cell = TableCellDefault.createNewInstance();
       cell.parent = cellsGroup;
@@ -232,30 +240,33 @@ async function createTable(options: CreateTableOptions): Promise<void> {
       cell.frame.x = j * (cell.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
       // Affect the cell symbol
-      const tableCellSymbolOverride = cell.overrides.find((override) => (
-        override.property === "symbolID" &&
-        override.affectedLayer.name.includes("Table/Cell Content/Default")
-      ));
+      const tableCellSymbolOverride = cell.overrides.find(
+        (override) =>
+          override.property === "symbolID" &&
+          override.affectedLayer.name.includes("Table/Cell Content/Default")
+      );
 
       if (tableCellSymbolOverride) {
         tableCellSymbolOverride.value = TableCellSymbol.symbolId;
       }
 
       // Affect the cell style
-      const tableCellLayerStyleOverride = cell.overrides.find((override) => (
-        (override.property as string) === "layerStyle" &&
-        override.affectedLayer.name === "Cell style"
-      ));
+      const tableCellLayerStyleOverride = cell.overrides.find(
+        (override) =>
+          (override.property as string) === "layerStyle" &&
+          override.affectedLayer.name === "Cell style"
+      );
 
       if (tableCellLayerStyleOverride) {
         tableCellLayerStyleOverride.value = TableCellLayerStyle.id;
       }
 
       // Affect the cell value
-      const tableCellValueOverride = cell.overrides.find((override) => (
-        (override.property as string) === "stringValue" &&
-        override.affectedLayer.name.match(/text/i)
-      ));
+      const tableCellValueOverride = cell.overrides.find(
+        (override) =>
+          (override.property as string) === "stringValue" &&
+          override.affectedLayer.name.match(/text/i)
+      );
 
       if (tableCellValueOverride) {
         tableCellValueOverride.value = `Cellule ${i + 1}:${j + 1}`;
@@ -264,7 +275,8 @@ async function createTable(options: CreateTableOptions): Promise<void> {
 
     // Resize the row to fit the cols
     row.frame.width =
-      Number(colCount) * (Number(cellWidth) + Number(colGap)) -
+      Number(colCount) *
+        (Number(cellWidth) + Number(colGap)) -
       Number(colGap) +
       2 * Number(rowPadding);
 
@@ -276,7 +288,30 @@ async function createTable(options: CreateTableOptions): Promise<void> {
   headerGroup.adjustToFit();
   tableGroup.adjustToFit();
 
-  // Affiche un message pour confirmer la création de la table
+  const selectedLayer =
+    doc.selectedLayers.layers[doc.selectedLayers.layers.length - 1];
+
+  if (selectedLayer) {
+    // Insert the table top 0px from the current selection and 100px right
+    tableGroup.frame.x =
+      selectedLayer.frame.x + selectedLayer.frame.width + 100;
+    tableGroup.frame.y = selectedLayer.frame.y;
+  }
+
+  // Select the table
+  tableGroup.selected = true;
+
+  // Clear selected layers
+  doc.selectedLayers.clear();
+
+  // Center on the table
+  doc.centerOnLayer(tableGroup);
+
+  // Keep settings on the create table to permit editing
+  Settings.setLayerSettingForKey(tableGroup, "type", "table");
+  Settings.setLayerSettingForKey(tableGroup, "options", options);
+
+  // Display a message to confirm the table creation
   UI.message(
     `Tableau de ${pluralize(Number(rowCount), "ligne")} et ${pluralize(
       Number(colCount),

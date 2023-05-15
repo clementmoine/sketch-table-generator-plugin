@@ -1,14 +1,17 @@
 import sketch, { SymbolMaster, Library } from "sketch";
 
+import Options from "../../resources/types/options.types";
+
 /**
- * Récupère le symbole de la bibliothèque de design-system avec le nom spécifié.
- *
- * @param {string} name - Le nom du symbole à récupérer.
- * @returns {SymbolMaster} Le symbole importé.
+ * Get a symbol from the given library with the name
  */
-function getLibrarySymbol(name: string): SymbolMaster | null {
+function getLibrarySymbol(libraryName?: Options['libraryName'], name?: string): SymbolMaster | null {
+  if (!libraryName && !name) {
+    return null;
+  }
+
   const library = ((sketch as any).getLibraries() as Library[]).find(
-    (library: Library) => library.name.includes("design-system")
+    (library: Library) => library.name.match("design-system")
   );
 
   const doc = sketch.getSelectedDocument();

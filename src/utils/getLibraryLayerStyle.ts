@@ -1,12 +1,17 @@
 import sketch, { Library, SharedStyle } from "sketch";
 
+import Options from "../../resources/types/options.types";
+
 /**
- * Récupère le style de calque de la bibliothèque de design-system avec le nom spécifié.
- *
- * @param {string} name - Le nom du style de calque à récupérer.
- * @returns {SharedStyle} Le style de calque importé.
+ * Get a layer style from the given library with the name
+ * 
+ * @todo Handle the library name to be undefined and use only local components
  */
-function getLibraryLayerStyle(name: string): SharedStyle | null {
+function getLibraryLayerStyle(libraryName?: Options['libraryName'], name?: string): SharedStyle | null {
+  if (!libraryName || !name) {
+    return null;
+  }
+
   const library = ((sketch as any)
     .getLibraries() as Library[])
     .find((library) => library.name.includes("design-system"));

@@ -1,14 +1,22 @@
 import React, { useCallback, useRef, useEffect, useMemo } from "react";
 
 import Button from "./components/Button";
+import Separator from "./components/Separator";
 import AdvancedOptions from "./components/AdvancedOptions";
 import DimensionSelector from "./components/DimensionSelector";
 
+import { useSketchContext } from "./context/SketchContext";
+
 import styles from "./App.module.scss";
-import Separator from "./components/Separator";
 
 function App() {
   const form = useRef<HTMLFormElement>(null);
+
+  const sketchContext = useSketchContext();
+
+  const [mode, options] = useMemo<
+    [mode: "edit" | "new", options?: Record<string, any>]
+  >(() => (["new", sketchContext.options]), [sketchContext]);
 
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -61,7 +69,12 @@ function App() {
       ref={form}
     >
       <main className={styles["app__body"]}>
-        <DimensionSelector />
+        <DimensionSelector
+          initialValue={
+            options?.colCount &&
+            options?.rowCount && { colCount: options.colCount, rowCount: options.rowCount }
+          }
+        />
 
         <Separator />
 
@@ -70,7 +83,7 @@ function App() {
 
       <footer className={styles["app__footer"]}>
         <Button type="reset" label="Annuler" />
-        <Button type="submit" label="Créer" />
+        <Button type="submit" label={mode === "edit" ? "Modifier" : "Créer"} />
       </footer>
     </form>
   );

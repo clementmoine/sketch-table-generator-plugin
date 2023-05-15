@@ -6,12 +6,13 @@ import Input, { InputProps } from "../Input";
 import styles from "./DimensionSelector.module.scss";
 
 export interface DimensionSelectorProps {
+  initialValue?: {colCount: string, rowCount: string};
   height?: number;
   width?: number;
 }
 
-const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
-  const [values, setValues] = useState<Record<string, string>>({});
+const DimensionSelector: FC<DimensionSelectorProps> = ({initialValue, ...props}) => {
+  const [value, setValue] = useState<{colCount: string, rowCount: string} | undefined>(initialValue);
   const [activeCell, setActiveCell] = useState<{
     row: number;
     col: number;
@@ -26,7 +27,7 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
       return;
     }
 
-    setValues({
+    setValue({
       rowCount: (activeCell.row + 1).toString(),
       colCount: (activeCell.col + 1).toString(),
     });
@@ -34,10 +35,10 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
 
   const handleChange = useCallback<NonNullable<InputProps["onChange"]>>(
     (value, input) => {
-      setValues((currentValue) => ({
-        rowCount: currentValue.rowCount || "",
-        colCount: currentValue.colCount || "",
-        [input.name!]: value || "",
+      setValue((currentValue) => ({
+        rowCount: currentValue?.rowCount || "",
+        colCount: currentValue?.colCount || "",
+        [input.name! as 'height' | 'width']: value || "",
       }));
     },
     []
@@ -73,10 +74,10 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
                 activeCell?.col >= colId &&
                 activeCell?.row >= rowId,
               [styles["dimension-selector-table-cell--is-selected"]]:
-                values.colCount &&
-                values.rowCount &&
-                Number(values.colCount) - 1 >= colId &&
-                Number(values.rowCount) - 1 >= rowId,
+                value?.colCount &&
+                value?.rowCount &&
+                Number(value.colCount) - 1 >= colId &&
+                Number(value.rowCount) - 1 >= rowId,
             })}
             onMouseOver={handleMouseOver}
           >
@@ -96,7 +97,7 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
     }
 
     return newRows;
-  }, [activeCell, props.height, props.width, values]);
+  }, [activeCell, props.height, props.width, value]);
 
   return (
     <div className={styles["dimension-selector"]} data-app-region="no-drag">
@@ -111,8 +112,8 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
         >
           {activeCell
             ? `Tableau ${activeCell.row + 1}x${activeCell.col + 1}`
-            : values.rowCount && values.colCount
-            ? `Tableau ${values.rowCount}x${values.colCount}`
+            : value?.rowCount && value?.colCount
+            ? `Tableau ${value.rowCount}x${value.colCount}`
             : "Insérer un tableau"}
         </caption>
 
@@ -124,9 +125,9 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
         min={1}
         type="number"
         name="rowCount"
-        max={props.height}
+        value={value?.rowCount}
         onChange={handleChange}
-        value={values["rowCount"]}
+        max={props.height || 0}
         className={styles['dimension-selector-input']}
       />
       <Input
@@ -134,9 +135,9 @@ const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
         min={1}
         type="number"
         name="colCount"
-        max={props.width}
+        max={props.width || 0}
         onChange={handleChange}
-        value={values["colCount"]}
+        value={value?.colCount}
         className={styles['dimension-selector-input']}
       />
     </div>

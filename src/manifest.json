@@ -10,7 +10,8 @@
       "handlers": {
         "run": "onRun",
         "actions": {
-          "Shutdown": "onShutdown"
+          "Shutdown": "onShutdown",
+          "SelectionChanged": "onSelectionChanged"
         }
       }
     }
@@ -18,8 +19,6 @@
   "menu": {
     "isRoot": true,
     "title": "Génération de tableau",
-    "items": [
-      "create-table"
-    ]
+    "items": ["create-table"]
   }
 }
