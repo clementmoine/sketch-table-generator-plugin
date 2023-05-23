@@ -6,13 +6,18 @@ import Input, { InputProps } from "../Input";
 import styles from "./DimensionSelector.module.scss";
 
 export interface DimensionSelectorProps {
-  initialValue?: {colCount: string, rowCount: string};
+  initialValue?: { colCount: string; rowCount: string };
   height?: number;
   width?: number;
 }
 
-const DimensionSelector: FC<DimensionSelectorProps> = ({initialValue, ...props}) => {
-  const [value, setValue] = useState<{colCount: string, rowCount: string} | undefined>(initialValue);
+const DimensionSelector: FC<DimensionSelectorProps> = ({
+  initialValue,
+  ...props
+}) => {
+  const [value, setValue] = useState<
+    { colCount: string; rowCount: string } | undefined
+  >(initialValue);
   const [activeCell, setActiveCell] = useState<{
     row: number;
     col: number;
@@ -33,12 +38,12 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({initialValue, ...props})
     });
   }, [activeCell]);
 
-  const handleChange = useCallback<NonNullable<InputProps["onChange"]>>(
-    (value, input) => {
+  const handleChange = useCallback(
+    (value: InputProps["value"], name: string) => {
       setValue((currentValue) => ({
         rowCount: currentValue?.rowCount || "",
         colCount: currentValue?.colCount || "",
-        [input.name! as 'height' | 'width']: value || "",
+        [name! as "height" | "width"]: value || "",
       }));
     },
     []
@@ -126,9 +131,9 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({initialValue, ...props})
         type="number"
         name="rowCount"
         value={value?.rowCount}
-        onChange={handleChange}
         max={props.height || 0}
-        className={styles['dimension-selector-input']}
+        className={styles["dimension-selector-input"]}
+        onChange={(value) => handleChange(value, "rowCount")}
       />
       <Input
         required
@@ -136,9 +141,9 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({initialValue, ...props})
         type="number"
         name="colCount"
         max={props.width || 0}
-        onChange={handleChange}
         value={value?.colCount}
-        className={styles['dimension-selector-input']}
+        className={styles["dimension-selector-input"]}
+        onChange={(value) => handleChange(value, "colzCount")}
       />
     </div>
   );

@@ -8,23 +8,19 @@ import styles from "./AdvancedOptions.module.scss";
 export interface AdvancedOptionsProps {}
 
 const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
-  const [values, setValues] = useState<Record<string, string>>({
+  const [value, setValue] = useState<Record<string, string>>({
     rowHeight: "56",
     cellWidth: "250",
     cellSymbolName: "Table/Cell Content/Default/Text",
     cellStyleName: "Table/Cell/Default/Transparent",
   });
 
-  const handleChange = useCallback<
-    NonNullable<SelectProps["onChange"] & InputProps["onChange"]>
-  >((value, input) => {
-    if (!input.name) {
+  const handleChange = useCallback((value: (SelectProps & InputProps)["value"], name: string) => {
+    if (!name) {
       return;
     }
 
-    const { name } = input;
-
-    setValues((v) => ({
+    setValue((v) => ({
       ...v,
       [name]: value as string,
     }));
@@ -41,9 +37,9 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           id="cellWidth"
           name="cellWidth"
           direction="vertical"
-          onChange={handleChange}
+          onChange={(value) => handleChange(value, 'cellWidth')}
           label="Largeur des cellules :"
-          value={values["cellWidth"]}
+          value={value["cellWidth"]}
         />
 
         <Input
@@ -52,17 +48,17 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           id="rowHeight"
           name="rowHeight"
           direction="vertical"
-          onChange={handleChange}
+          onChange={(value) => handleChange(value, 'rowHeight')}
           label="Hauteur des lignes :"
-          value={values["rowHeight"]}
+          value={value["rowHeight"]}
         />
 
         <Select
           label="Contenu des cellules"
           id="cellSymbolName"
           name="cellSymbolName"
-          onChange={handleChange}
-          value={values["cellSymbolName"]}
+          onChange={(value) => handleChange(value, 'cellSymbolName')}
+          value={value["cellSymbolName"]}
           options={[
             {
               label: "Dropdown list",
@@ -78,9 +74,9 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
         <Select
           id="cellStyleName"
           name="cellStyleName"
-          onChange={handleChange}
+          onChange={(value) => handleChange(value, 'cellStyleName')}
           label="Style des cellules"
-          value={values["cellStyleName"]}
+          value={value["cellStyleName"]}
           options={[
             {
               label: "Default",

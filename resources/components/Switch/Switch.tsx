@@ -14,6 +14,7 @@ export interface SwitchProps {
   label?: string;
   direction?: "horizontal" | "vertical";
   className?: string;
+  switchClassName?: string;
   hidden?: boolean;
   options: SwitchOption[];
   value?: SwitchOption["value"];
@@ -21,12 +22,17 @@ export interface SwitchProps {
 }
 
 const Switch: FC<SwitchProps> = (props) => {
-  const { label, id, name, className, options, onChange } = props;
+  const { label, id, name, className, switchClassName, options, direction, onChange } = props;
 
   const isControlled = useMemo(() => "value" in props, [props]);
 
   const [value, setValue] = useState<SwitchProps["value"]>(
-    (isControlled ? props.value : undefined) || props.options[0].value
+    (isControlled ? props.value : undefined) || options[0].value
+  );
+
+  const currentChecked = useMemo(
+    () => (isControlled ? props.value : value) || options[0].value,
+    [value, isControlled, props]
   );
 
   const handleChange = useCallback(
@@ -46,9 +52,8 @@ const Switch: FC<SwitchProps> = (props) => {
 
   return (
     <div
-      hidden={props.hidden}
-      className={classNames(styles["switch-field"], props.className, {
-        [styles[`input-field--is-${props.direction}`]]: !!props.direction,
+      className={classNames(styles["switch-field"], className, {
+        [styles[`input-field--is-${direction}`]]: !!direction,
       })}
       data-app-region="no-drag"
     >
@@ -56,7 +61,7 @@ const Switch: FC<SwitchProps> = (props) => {
         {label}
       </label>
 
-      <ol id={id || name} className={classNames(styles["switch"], className)}>
+      <ol id={id || name} className={classNames(styles["switch"], switchClassName)}>
         {options.map(
           ({ label: optionLabel, value: optionValue, ...option }) => (
             <li
@@ -65,7 +70,7 @@ const Switch: FC<SwitchProps> = (props) => {
               data-value={optionValue}
               onClick={handleChange}
               className={classNames(styles["switch__option"], {
-                [styles["switch__option--is-active"]]: value === optionValue,
+                [styles["switch__option--is-active"]]: currentChecked === optionValue,
               })}
               key={optionValue}
             >

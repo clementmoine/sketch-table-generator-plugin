@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 
 import styles from "./Select.module.scss";
@@ -6,53 +6,56 @@ import styles from "./Select.module.scss";
 export interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   label?: string;
+  value?: string;
   options: React.OptionHTMLAttributes<HTMLOptionElement>[];
-  onChange?: (
-    value: SelectProps['value'],
-    select: SelectProps
-  ) => void;
+  onChange?: (value: SelectProps["value"]) => void;
 }
 
-const Select: React.FC<SelectProps> = ({initialValue, ...props}) => {
-  const [value, setValue] = useState<SelectProps["value"]>(props.value || "");
+const Select: React.FC<SelectProps> = (props) => {
+  const { className, options, label, id, name, onChange, ...restProps } = props;
 
-  useEffect(() => {
-    setValue(props.value || "");
-  }, [props.value]);
+  const isControlled = useMemo(() => "value" in props, [props]);
 
-  useEffect(() => {
-    if (props.onChange && (props.value || "") != value) {
-      props.onChange(value || "", props);
-    }
-  }, [value]);
+  const [value, setValue] = useState<SelectProps["value"]>(
+    (isControlled && props.value) || ""
+  );
+
+  const currentValue = useMemo(
+    () => (isControlled ? props.value : value),
+    [isControlled, value, props]
+  );
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
-      setValue(event.target.value);
-    },
-    []
-  );
+      const newValue = event.target.value;
 
-  console.log(styles["select"]);
+      if (!isControlled) {
+        setValue(newValue);
+      }
+
+      if (onChange) {
+        onChange(newValue);
+      }
+    },
+    [onChange, isControlled]
+  );
 
   return (
     <div className={styles["select-field"]}>
-      <label
-        className={styles["select-label"]}
-        htmlFor={props.id || props.name}
-      >
-        {props.label}
+      <label className={styles["select-label"]} htmlFor={id || name}>
+        {label}
       </label>
 
       <select
-        {...props}
-        value={value}
+        {...restProps}
+        name={name}
+        id={id || name}
+        value={currentValue}
         onChange={handleChange}
         data-app-region="no-drag"
-        id={props.id || props.name}
-        className={classNames(styles["select"], props.className)}
+        className={classNames(styles["select"], className)}
       >
-        {props.options.map((option, id) => (
+        {options.map((option, id) => (
           <option key={id} {...option} />
         ))}
       </select>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import classNames from "classnames";
 
 import Button from "../Button";
@@ -9,164 +9,205 @@ export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
   label?: string;
   value?: string;
-  inputClassName?: InputProps['className'];
+  inputClassName?: InputProps["className"];
   direction?: "horizontal" | "vertical";
-  onChange?: (value: InputProps["value"], select: InputProps) => void;
+  onChange?: (value: InputProps["value"]) => void;
 }
 
-const Input: React.FC<InputProps> = ({initialValue, ...props}) => {
-  const [value, setValue] = useState<InputProps["value"]>(props.value|| "");
+const Input: React.FC<InputProps> = (props) => {
+  const {
+    id,
+    min,
+    max,
+    name,
+    type,
+    step,
+    label,
+    onBlur,
+    hidden,
+    onChange,
+    direction,
+    className,
+    onKeyDown,
+    inputClassName,
+    ...restProps
+  } = props;
 
-  useEffect(() => {
-    setValue(props.value || "");
-  }, [props.value]);
+  const isControlled = useMemo(() => "value" in props, [props]);
 
-  useEffect(() => {
-    if (props.onChange && (props.value || "") != value) {
-      props.onChange(value || "", props);
-    }
-  }, [value]);
-  
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (props.type === 'number' && event.target.value == undefined) {
-        let value = parseFloat(event.target.value) || 0;
-
-        if (props.max !== undefined) {
-          value = Math.min(value, Number(props.max));
-        }
-  
-        if (props.min !== undefined) {
-          value = Math.max(value, Number(props.min));
-        }
-
-        setValue(value.toString());
-
-        return;
-      }
-
-  
-      setValue(event.target.value);
-    },
-    [props.max, props.min]
+  const [value, setValue] = useState<InputProps["value"]>(
+    (isControlled && props.value) || ""
   );
 
-  const handleBlur = useCallback((event: React.FocusEvent) => {
-    if (props.type === "number") {
-      const input = event.currentTarget as HTMLInputElement;
-      
-      if (input.value == undefined) {
-        return;
+  const currentValue = useMemo(
+    () => (isControlled ? props.value : value) || "",
+    [props, value, isControlled]
+  );
+
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      let newValue: string | number = event.target.value;
+
+      if (type === "number" && newValue == undefined) {
+        newValue = parseFloat(newValue) || 0;
+
+        if (max !== undefined) {
+          newValue = Math.min(newValue, Number(max));
+        }
+
+        if (min !== undefined) {
+          newValue = Math.max(newValue, Number(min));
+        }
+
+        newValue = newValue.toString();
       }
 
-      let newValue = parseFloat(input.value) || 0;
-
-      if (props.max !== undefined) {
-        newValue = Math.min(newValue, Number(props.max));
+      if (!isControlled) {
+        setValue(newValue);
       }
 
-      if (props.min !== undefined) {
-        newValue = Math.max(newValue, Number(props.min));
+      if (onChange) {
+        onChange(newValue);
+      }
+    },
+    [isControlled, onChange, max, min, type]
+  );
+
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLInputElement>) => {
+      let newValue: string | number = event.target.value;
+
+      if (type === "number" && newValue == undefined) {
+        newValue = parseFloat(newValue) || 0;
+
+        if (max !== undefined) {
+          newValue = Math.min(newValue, Number(max));
+        }
+
+        if (min !== undefined) {
+          newValue = Math.max(newValue, Number(min));
+        }
+
+        newValue = newValue.toString();
+
+        if (!isControlled) {
+          setValue(newValue);
+        }
+
+        if (onChange) {
+          onChange(newValue);
+        }
       }
 
-      setValue(newValue.toString());
-    }
-  }, []);
+      if (onBlur) {
+        onBlur(event);
+      }
+    },
+    [isControlled, onBlur, onChange, onBlur, type, max, min]
+  );
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (
-        props.type === "number" &&
+        type === "number" &&
         (event.key === "ArrowUp" || event.key === "ArrowDown")
       ) {
         event.preventDefault();
         event.stopPropagation();
 
+        let newValue: string | number = event.currentTarget.value;
+
         const isIncrement = event.key === "ArrowUp";
+        const increment =
+          (isIncrement ? 1 : -1) * ((event.shiftKey ? 10 : Number(step)) || 1);
 
-        const currentValue = parseFloat(value || "0");
-        const increment = (isIncrement ? 1 : -1) * (event.shiftKey ? 10 : 1);
+        newValue = parseFloat(newValue || "0") + increment;
 
-        let newValue = currentValue + increment;
-
-        if (props.max !== undefined) {
-          newValue = Math.min(newValue, Number(props.max));
-        }
-  
-        if (props.min !== undefined) {
-          newValue = Math.max(newValue, Number(props.min));
+        if (max !== undefined) {
+          newValue = Math.min(newValue, Number(max));
         }
 
-        setValue(newValue.toString());
+        if (min !== undefined) {
+          newValue = Math.max(newValue, Number(min));
+        }
+
+        newValue = newValue.toString();
+
+        if (!isControlled) {
+          setValue(newValue);
+        }
+
+        if (onChange) {
+          onChange(newValue);
+        }
       }
 
-      if (props.onKeyDown) {
-        props.onKeyDown(event);
+      if (onKeyDown) {
+        onKeyDown(event);
       }
     },
-    [props.type, value, props.onKeyDown, props.max, props.min]
+    [onChange, isControlled, onKeyDown, type, max, min, step]
   );
 
   const handleArrowClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
 
-      const stepCount = event.shiftKey ? 10 : Number(props.step) || 1;
+      let newValue: string | number = currentValue;
 
-      if (event.currentTarget.dataset.step === "up") {
-        setValue((prevValue) => {
-          let newValue = (parseFloat(prevValue || "0") + stepCount);
+      const isIncrement = event.currentTarget.dataset.step === "up";
+      const increment =
+        (isIncrement ? 1 : -1) * ((event.shiftKey ? 10 : Number(step)) || 1);
 
-          if (props.max !== undefined) {
-            newValue = Math.min(newValue, Number(props.max));
-          }
-    
-          if (props.min !== undefined) {
-            newValue = Math.max(newValue, Number(props.min));
-          }
+      newValue = parseFloat(newValue || "0") + increment;
 
-          return newValue.toString();
-        });
-      } else {
-        setValue((prevValue) => {
-          let newValue = (parseFloat(prevValue || "0") - stepCount);
+      if (max !== undefined) {
+        newValue = Math.min(newValue, Number(max));
+      }
 
-          if (props.max !== undefined) {
-            newValue = Math.min(newValue, Number(props.max));
-          }
-    
-          if (props.min !== undefined) {
-            newValue = Math.max(newValue, Number(props.min));
-          }
+      if (min !== undefined) {
+        newValue = Math.max(newValue, Number(min));
+      }
 
-          return newValue.toString();
-        });
+      newValue = newValue.toString();
+
+      if (!isControlled) {
+        setValue(newValue);
+      }
+
+      if (onChange) {
+        onChange(newValue);
       }
     },
-    []
+    [isControlled, onChange, currentValue, step, max, min]
   );
 
   return (
     <div
-      hidden={props.hidden}
-      className={classNames(styles["input-field"], props.className, {
-        [styles[`input-field--is-${props.direction}`]]: !!props.direction,
+      hidden={hidden}
+      className={classNames(styles["input-field"], className, {
+        [styles[`input-field--is-${direction}`]]: !!direction,
       })}
       data-app-region="no-drag"
     >
-      <label className={styles["input-label"]} htmlFor={props.id || props.name}>
-        {props.label}
+      <label className={styles["input-label"]} htmlFor={id || name}>
+        {label}
       </label>
 
       <div className={styles["input-container"]}>
         <input
-          {...props}
-          value={value}
+          {...restProps}
+          type={type}
+          max={max}
+          min={min}
           onBlur={handleBlur}
+          value={currentValue}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          id={props.id || props.name}
-          className={classNames(styles["input"], props.inputClassName)}
+          id={id || name}
+          name={name}
+          step={step}
+          className={classNames(styles["input"], inputClassName)}
         />
         <div
           className={classNames(
@@ -175,7 +216,7 @@ const Input: React.FC<InputProps> = ({initialValue, ...props}) => {
           )}
         >
           {/* Input number addons */}
-          {props.type === "number" && (
+          {type === "number" && (
             <div className={styles["step-buttons"]}>
               <Button type="button" data-step="up" onClick={handleArrowClick}>
                 +
