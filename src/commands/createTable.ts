@@ -30,10 +30,19 @@ export default function () {
     browserWindow.show();
   });
 
-  // close the modal on blur
-  // browserWindow.on("blur", () => {
-  //   browserWindow.close();
-  // });
+  // Close the modal on blur (not in dev mode)
+  browserWindow.on("blur", () => {
+    if (process.env.NODE_ENV !== 'development') {
+      browserWindow.close();
+    }
+  });
+
+  // Reload the modal on focus in dev mode 
+  browserWindow.on("focus", () => {
+    if (process.env.NODE_ENV === 'development') {
+      browserWindow.reload();
+    }
+  });
 
   // Handle messages from the webview
   browserWindow.webContents.on("submit", (options) => {
