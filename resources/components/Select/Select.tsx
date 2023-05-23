@@ -33,6 +33,8 @@ const Select: React.FC<SelectProps> = ({initialValue, ...props}) => {
     []
   );
 
+  console.log(styles["select"]);
+
   return (
     <div className={styles["select-field"]}>
       <label

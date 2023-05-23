@@ -1,0 +1,45 @@
+@use "../Button/Button.module.scss";
+
+.switch {
+  width: 100%;
+  padding: 1px;
+  display: flex;
+  border-radius: 8px;
+  background: #e1e2e1;
+  box-shadow: inset 0 0 6px -4px rgba(0, 0, 0, 0.5);
+
+  &-label {
+    text-transform: uppercase;
+    color: #777777;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &-field {
+    flex: 1;
+    gap: 12px 8px;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+
+    &--is-vertical {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  &__option {
+    @extend .button;
+    flex: 1;
+    border: none;
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.27);
+
+    &:not(&#{--is-active}) {
+      border: none;
+      box-shadow: none;
+      background-color: transparent;
+    }
+  }
+}

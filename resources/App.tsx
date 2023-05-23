@@ -8,6 +8,7 @@ import DimensionSelector from "./components/DimensionSelector";
 import { useSketchContext } from "./context/SketchContext";
 
 import styles from "./App.module.scss";
+import Switch from "./components/Switch";
 
 function App() {
   const form = useRef<HTMLFormElement>(null);
@@ -16,7 +17,7 @@ function App() {
 
   const [mode, options] = useMemo<
     [mode: "edit" | "new", options?: Record<string, any>]
-  >(() => (["new", sketchContext.options]), [sketchContext]);
+  >(() => ["new", sketchContext.options], [sketchContext]);
 
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -72,8 +73,22 @@ function App() {
         <DimensionSelector
           initialValue={
             options?.colCount &&
-            options?.rowCount && { colCount: options.colCount, rowCount: options.rowCount }
+            options?.rowCount && {
+              colCount: options.colCount,
+              rowCount: options.rowCount,
+            }
           }
+        />
+
+        <Switch
+          label="Grouper par :"
+          options={[
+            { label: "Lignes", value: "row" },
+            {
+              label: "Colonnes",
+              value: "column",
+            },
+          ]}
         />
 
         <Separator />
