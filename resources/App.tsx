@@ -9,6 +9,8 @@ import { useSketchContext } from "./context/SketchContext";
 
 import styles from "./App.module.scss";
 import Switch from "./components/Switch";
+import Input from "./components/Input";
+import Radio from "./components/Radio";
 
 function App() {
   const form = useRef<HTMLFormElement>(null);
@@ -90,6 +92,11 @@ function App() {
             },
           ]}
         />
+
+        <div className={styles['app__mode-select']}>
+          <Radio name="mode" value="new" label="Nouveau tableau" />
+          <Radio id="edit" name="mode" value="edit" label="Tableau existant" />
+        </div>
 
         <Separator />
 
