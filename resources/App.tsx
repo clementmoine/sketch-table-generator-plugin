@@ -1,24 +1,22 @@
-import React, { useCallback, useRef, useEffect, useMemo } from "react";
+import React, { useCallback, useRef, useEffect, useState } from "react";
 
 import Button from "./components/Button";
+import Switch from "./components/Switch";
 import Separator from "./components/Separator";
+import RadioGroup from "./components/RadioGroup";
 import AdvancedOptions from "./components/AdvancedOptions";
 import DimensionSelector from "./components/DimensionSelector";
 
 import { useSketchContext } from "./context/SketchContext";
 
 import styles from "./App.module.scss";
-import Switch from "./components/Switch";
-import RadioGroup from "./components/RadioGroup";
 
 function App() {
   const form = useRef<HTMLFormElement>(null);
 
   const sketchContext = useSketchContext();
 
-  const [mode, options] = useMemo<
-    [mode: "edit" | "new", options?: Record<string, any>]
-  >(() => ["new", sketchContext.options], [sketchContext]);
+  const [mode, setMode] = useState<"edit" | "new">();
 
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -49,6 +47,9 @@ function App() {
 
   // Add an handle that detects content height changed to run a window.postMessage("resize") to make sure the window is always adjusted to content height (no scroll)
   useEffect(() => {
+    // Ask to update the selection
+    window.postMessage("updateSelection");
+
     // Send the height in second argument
     const resizeObserver = new ResizeObserver(() => {
       const height = form.current!.clientHeight;
@@ -71,15 +72,7 @@ function App() {
       ref={form}
     >
       <main className={styles["app__body"]}>
-        <DimensionSelector
-          initialValue={
-            options?.colCount &&
-            options?.rowCount && {
-              colCount: options.colCount,
-              rowCount: options.rowCount,
-            }
-          }
-        />
+        <DimensionSelector />
 
         <Switch
           label="Grouper par :"
@@ -94,6 +87,8 @@ function App() {
 
         <RadioGroup
           name="mode"
+          onChange={(newMode) => setMode(newMode)}
+          value={mode || (sketchContext.selectedTable ? "edit" : "new")}
           options={[
             {
               label: "Nouveau tableau",

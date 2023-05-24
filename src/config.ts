@@ -1,1 +1,1 @@
-export const webviewIdentifier = "table-generator.webview";
+export const webviewId = "table-generator.webview";

@@ -1,23 +1,25 @@
 import UI from "sketch/ui";
 import { Group } from "sketch/dom";
 import sketch, { Settings } from "sketch";
-import BrowserWindow, { BrowserWindowOptions } from "sketch-module-web-view";
+import BrowserWindow from "sketch-module-web-view";
+// @ts-ignore
+import { isWebviewPresent, sendToWebview } from 'sketch-module-web-view/remote'
 
 import getLibraryLayerStyle from "../utils/getLibraryLayerStyle";
 import getLibrarySymbol from "../utils/getLibrarySymbol";
 import pluralize from "../utils/pluralize";
 
-import { webviewIdentifier } from "../config";
+import { webviewId } from "../config";
 
 import Options from "../../resources/types/options.types";
 import { defaultOptions } from "../../resources/types/options.defaults";
 
 export default function () {
   const browserWindow = new BrowserWindow({
-    identifier: webviewIdentifier,
+    identifier: webviewId,
     show: false,
     width: 280,
-    height: 384,
+    height: 504,
     frame: false,
     center: true,
     resizable: false,
@@ -49,6 +51,11 @@ export default function () {
     createTable(JSON.parse(options)).then(browserWindow.close);
   });
 
+  // Handle the update selection asked from the webview
+  browserWindow.webContents.on("updateSelection", () => {
+    onSelectionChanged();
+  });
+
   browserWindow.webContents.on("cancel", () => {
     browserWindow.close();
   });
@@ -69,35 +76,47 @@ export default function () {
 
 // Listen the selection change
 export function onSelectionChanged() {
-  const browserWindow = BrowserWindow.fromId(webviewIdentifier);
+  if (isWebviewPresent(webviewId)) {
+    // Get the currently selected document
+    const doc = sketch.getSelectedDocument();
+  
+    // Try to get the currently selected table
+    const selectedTable = doc?.selectedLayers.layers.find(
+      (layer) => {
+        return sketch.Settings.layerSettingForKey(layer, "type") === "table"
+      }
+    );
 
-  if (!browserWindow) {
-    return;
+    if (!selectedTable) {
+      // Send the selected table to the webview
+      sendToWebview(webviewId, `setSelectedTable(undefined)`);
+
+      return;
+    }
+
+    // Send the selected table to the webview
+    sendToWebview(webviewId, `setSelectedTable("${selectedTable.id}")`);
+
+    // Try to get the options from the selected table
+    const options = sketch.Settings.layerSettingForKey(selectedTable, "options");
+  
+    if (!options) {
+      return;
+    }
+  
+    // Send the options to the webview
+    sendToWebview(webviewId, `setOptions(${JSON.stringify(options)})`)
   }
+}
 
-  // Get the currently selected document
-  const doc = sketch.getSelectedDocument();
+// When the plugin is shutdown by Sketch (for example when the user disable the plugin)
+// we need to close the webview if it's open
+export function onShutdown() {
+  const existingWebview = BrowserWindow.fromId(webviewId);
 
-  // Try to get the currently selected table
-  const selectedTable = doc?.selectedLayers.layers.find(
-    (layer) => sketch.Settings.layerSettingForKey(layer, "type") === "table"
-  );
-
-  if (!selectedTable) {
-    return;
+  if (existingWebview) {
+    existingWebview.close();
   }
-
-  // Try to get the options from the selected table
-  const options = sketch.Settings.layerSettingForKey(selectedTable, "options");
-
-  if (!options) {
-    return;
-  }
-
-  // Send the options to the webview
-  browserWindow.webContents.executeJavaScript(
-    `setOptions(${JSON.stringify(options)})`
-  );
 }
 
 /**
@@ -327,14 +346,4 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
       "colonne"
     )} inséré dans le document ! 👍`
   );
-}
-
-// When the plugin is shutdown by Sketch (for example when the user disable the plugin)
-// we need to close the webview if it's open
-export function onShutdown() {
-  const existingWebview = BrowserWindow.fromId(webviewIdentifier);
-
-  if (existingWebview) {
-    existingWebview.close();
-  }
 }
