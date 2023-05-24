@@ -4,16 +4,19 @@ import classNames from "classnames";
 import Radio, { RadioProps } from "../Radio";
 
 import styles from "./RadioGroup.module.scss";
-
-export interface RadioGroupProps
+export interface RadioOption<T> extends Pick<RadioProps, "label"> {
+  label: string;
+  value: T;
+}
+export interface RadioGroupProps<T>
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
   className?: string;
-  options: Pick<RadioProps, "label" | "value">[];
+  options: RadioOption<T>[];
   value?: RadioProps["value"];
-  onChange?: (value: RadioGroupProps["value"]) => void;
+  onChange?: (value: RadioOption<T>['value']) => void;
 }
 
-const RadioGroup: FC<RadioGroupProps> = (props) => {
+const RadioGroup = <T extends string>(props: RadioGroupProps<T>) => {
   const { options, className, onChange } = props;
 
   const isControlled = useMemo(() => "value" in props, [props]);
@@ -28,7 +31,7 @@ const RadioGroup: FC<RadioGroupProps> = (props) => {
   );
 
   const handleChange = useCallback(
-    (newValue: string) => {
+    (newValue: T) => {
       if (!isControlled) {
         setValue(newValue);
       }
