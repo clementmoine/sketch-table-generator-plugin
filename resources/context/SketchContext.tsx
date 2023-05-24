@@ -5,11 +5,11 @@ import { defaultOptions } from "../types/options.defaults";
 
 interface SketchContextValue {
   selectedTable?: string;
-  options?: Options;
+  options: Options;
 }
 
 // Create context to store data from Sketch
-const SketchContext = createContext<SketchContextValue>({});
+const SketchContext = createContext<SketchContextValue>({ options: {} });
 
 // Custom hook to access the context
 export const useSketchContext = (): SketchContextValue =>

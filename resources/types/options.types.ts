@@ -3,6 +3,10 @@
  */
 type Options = {
     /**
+     * Insert mode for the table
+     */
+    mode?: 'new' | 'edit';
+    /**
      * Library name to find each symbols and styles.
      */
     libraryName?: string | RegExp;
@@ -10,32 +14,32 @@ type Options = {
     /**
      * The height of each row. Can be a number or a string.
      */
-    rowHeight?: number | string;
+    rowHeight?: string;
     
     /**
      * The total number of rows. Can be a number or a string.
      */
-    rowCount?: number | string;
+    rowCount?: string;
     
     /**
      * The total number of columns. Can be a number or a string.
      */
-    colCount?: number | string;
+    colCount?: string;
     
     /**
      * The width of each cell. Can be a number or a string.
      */
-    cellWidth?: number | string;
+    cellWidth?: string;
     
     /**
      * The padding applied to each row. Can be a number or a string.
      */
-    rowPadding?: number | string;
+    rowPadding?: string;
     
     /**
      * The gap between columns. Can be a number or a string.
      */
-    colGap?: number | string;
+    colGap?: string;
     
     /**
      * The name of the style applied to each cell.
@@ -48,9 +52,9 @@ type Options = {
     cellSymbolName?: string;
     
     /**
-     * Indicates whether to group data by column.
+     * Indicates whether to group data by column or row.
      */
-    groupByColumn?: boolean;
+    groupBy?: 'column' | 'row';
 };
   
 export default Options;

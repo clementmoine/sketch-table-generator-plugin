@@ -1,30 +1,14 @@
-import React, { FC, useCallback, useState } from "react";
+import { useFormikContext } from "formik";
+import React, { FC } from "react";
 
-import Input, { InputProps } from "../Input";
-import Select, { SelectProps } from "../Select";
+import Input from "../Input";
+import Select from "../Select";
 
 import styles from "./AdvancedOptions.module.scss";
+import Options from "../../types/options.types";
 
-export interface AdvancedOptionsProps {}
-
-const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
-  const [value, setValue] = useState<Record<string, string>>({
-    rowHeight: "56",
-    cellWidth: "250",
-    cellSymbolName: "Table/Cell Content/Default/Text",
-    cellStyleName: "Table/Cell/Default/Transparent",
-  });
-
-  const handleChange = useCallback((value: (SelectProps & InputProps)["value"], name: string) => {
-    if (!name) {
-      return;
-    }
-
-    setValue((v) => ({
-      ...v,
-      [name]: value as string,
-    }));
-  }, []);
+const AdvancedOptions: FC = () => {
+  const formik = useFormikContext<Options>();
 
   return (
     <details className={styles["advanced-options"]}>
@@ -37,9 +21,12 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           id="cellWidth"
           name="cellWidth"
           direction="vertical"
-          onChange={(value) => handleChange(value, 'cellWidth')}
           label="Largeur des cellules :"
-          value={value["cellWidth"]}
+          value={formik.values["cellWidth"]}
+          onChange={(value) => {
+            formik.setFieldValue("cellWidth", value);
+            formik.setFieldTouched("cellWidth");
+          }}
         />
 
         <Input
@@ -48,17 +35,23 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
           id="rowHeight"
           name="rowHeight"
           direction="vertical"
-          onChange={(value) => handleChange(value, 'rowHeight')}
           label="Hauteur des lignes :"
-          value={value["rowHeight"]}
+          value={formik.values["rowHeight"]}
+          onChange={(value) => {
+            formik.setFieldValue("rowHeight", value);
+            formik.setFieldTouched("rowHeight");
+          }}
         />
 
         <Select
           label="Contenu des cellules"
           id="cellSymbolName"
           name="cellSymbolName"
-          onChange={(value) => handleChange(value, 'cellSymbolName')}
-          value={value["cellSymbolName"]}
+          value={formik.values["cellSymbolName"]}
+          onChange={(value) => {
+            formik.setFieldValue("cellSymbolName", value);
+            formik.setFieldTouched("cellSymbolName");
+          }}
           options={[
             {
               label: "Dropdown list",
@@ -74,9 +67,12 @@ const AdvancedOptions: FC<AdvancedOptionsProps> = (props) => {
         <Select
           id="cellStyleName"
           name="cellStyleName"
-          onChange={(value) => handleChange(value, 'cellStyleName')}
           label="Style des cellules"
-          value={value["cellStyleName"]}
+          value={formik.values["cellStyleName"]}
+          onChange={(value) => {
+            formik.setFieldValue("cellStyleName", value);
+            formik.setFieldTouched("cellStyleName");
+          }}
           options={[
             {
               label: "Default",

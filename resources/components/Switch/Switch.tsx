@@ -3,12 +3,12 @@ import classNames from "classnames";
 
 import styles from "./Switch.module.scss";
 
-export interface SwitchOption extends React.LiHTMLAttributes<HTMLLIElement> {
+export interface SwitchOption<T> extends Omit<React.LiHTMLAttributes<HTMLLIElement>, 'value'> {
   label: string;
-  value: string;
+  value: T;
 }
 
-export interface SwitchProps {
+export interface SwitchProps<T> {
   id?: string;
   name?: string;
   label?: string;
@@ -16,12 +16,12 @@ export interface SwitchProps {
   className?: string;
   switchClassName?: string;
   hidden?: boolean;
-  options: SwitchOption[];
-  value?: SwitchOption["value"];
-  onChange?: (value: SwitchProps["value"]) => void;
+  options: SwitchOption<T>[];
+  value?: T;
+  onChange?: (value: SwitchOption<T>["value"]) => void;
 }
 
-const Switch: FC<SwitchProps> = (props) => {
+const Switch = <T extends string>(props: SwitchProps<T>) => {
   const {
     label,
     id,
@@ -35,7 +35,7 @@ const Switch: FC<SwitchProps> = (props) => {
 
   const isControlled = useMemo(() => "value" in props, [props]);
 
-  const [value, setValue] = useState<SwitchProps["value"]>(
+  const [value, setValue] = useState<SwitchProps<T>["value"]>(
     (isControlled ? props.value : undefined) || options[0].value
   );
 
@@ -46,7 +46,7 @@ const Switch: FC<SwitchProps> = (props) => {
 
   const handleChange = useCallback(
     (event: React.MouseEvent<HTMLLIElement>) => {
-      const newValue = event.currentTarget.dataset.value;
+      const newValue = event.currentTarget.dataset.value as T;
 
       if (!isControlled) {
         setValue(newValue);

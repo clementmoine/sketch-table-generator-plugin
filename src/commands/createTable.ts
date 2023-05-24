@@ -47,13 +47,15 @@ export default function () {
   });
 
   // Handle messages from the webview
-  browserWindow.webContents.on("submit", (options) => {
-    createTable(JSON.parse(options)).then(browserWindow.close);
+  browserWindow.webContents.on("submit", (rawOptions) => {
+    const options = JSON.parse(rawOptions);
+    
+    (options.mode === "edit" ? editTable : createTable)(options).then(browserWindow.close);
   });
 
   // Handle the update selection asked from the webview
-  browserWindow.webContents.on("updateSelection", () => {
-    onSelectionChanged();
+  browserWindow.webContents.on("updateContext", () => {
+    onContextChanged();
   });
 
   browserWindow.webContents.on("cancel", () => {
@@ -75,7 +77,7 @@ export default function () {
 }
 
 // Listen the selection change
-export function onSelectionChanged() {
+export function onContextChanged() {
   if (isWebviewPresent(webviewId)) {
     // Get the currently selected document
     const doc = sketch.getSelectedDocument();
@@ -121,13 +123,14 @@ export function onShutdown() {
 }
 
 /**
- * Create a new table
- *
+ * Edit an existing table
+ * 
  * @async
- * @param {Options} options - Les options de la table.
+ * @param {Options} options - Table options 
  */
-async function createTable(options: Options = defaultOptions): Promise<void> {
+async function editTable(options: Options = defaultOptions): Promise<void> {
   const {
+    mode = defaultOptions.mode,
     libraryName = defaultOptions.libraryName,
     rowHeight = defaultOptions.rowHeight,
     rowCount = defaultOptions.rowCount,
@@ -137,7 +140,35 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     colGap = defaultOptions.colGap,
     cellStyleName = defaultOptions.cellStyleName,
     cellSymbolName = defaultOptions.cellSymbolName,
-    groupByColumn = defaultOptions.groupByColumn,
+    groupBy = defaultOptions.groupBy,
+  } = options;
+  
+  // Get the currently selected document
+  const doc = sketch.getSelectedDocument();
+
+  // Parse the selected table to take every overrides that needs to be kept
+  // Once we parsed table data we will re-create this table with new options
+}
+
+/**
+ * Create a new table
+ *
+ * @async
+ * @param {Options} options - Table options
+ */
+async function createTable(options: Options = defaultOptions): Promise<void> {
+  const {
+    mode = defaultOptions.mode,
+    libraryName = defaultOptions.libraryName,
+    rowHeight = defaultOptions.rowHeight,
+    rowCount = defaultOptions.rowCount,
+    colCount = defaultOptions.colCount,
+    cellWidth = defaultOptions.cellWidth,
+    rowPadding = defaultOptions.rowPadding,
+    colGap = defaultOptions.colGap,
+    cellStyleName = defaultOptions.cellStyleName,
+    cellSymbolName = defaultOptions.cellSymbolName,
+    groupBy = defaultOptions.groupBy,
   } = options;
 
   // Get the currently selected document
@@ -324,11 +355,11 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     tableGroup.frame.y = selectedLayer.frame.y;
   }
 
-  // Select the table
-  tableGroup.selected = true;
-
   // Clear selected layers
   doc.selectedLayers.clear();
+
+  // Select the table
+  tableGroup.selected = true;
 
   // Center on the table
   doc.centerOnLayer(tableGroup);

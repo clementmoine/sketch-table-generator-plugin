@@ -4,15 +4,14 @@ import classNames from "classnames";
 import Radio, { RadioProps } from "../Radio";
 
 import styles from "./RadioGroup.module.scss";
-export interface RadioOption<T> extends Pick<RadioProps, "label"> {
-  label: string;
+export interface RadioOption<T> extends Omit<RadioProps, "value" | "onChange"> {
   value: T;
 }
 export interface RadioGroupProps<T>
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   className?: string;
   options: RadioOption<T>[];
-  value?: RadioProps["value"];
+  value?: T;
   onChange?: (value: RadioOption<T>["value"]) => void;
 }
 

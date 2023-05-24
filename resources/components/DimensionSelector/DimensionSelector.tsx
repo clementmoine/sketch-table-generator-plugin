@@ -1,23 +1,21 @@
-import React, { FC, useState, MouseEvent, useCallback, useMemo } from "react";
 import classnames from "classnames";
+import { useFormikContext } from "formik";
+import React, { FC, useState, MouseEvent, useCallback, useMemo } from "react";
 
 import Input, { InputProps } from "../Input";
+
+import Options from "../../types/options.types";
 
 import styles from "./DimensionSelector.module.scss";
 
 export interface DimensionSelectorProps {
-  initialValue?: { colCount: string; rowCount: string };
   height?: number;
   width?: number;
 }
 
-const DimensionSelector: FC<DimensionSelectorProps> = ({
-  initialValue,
-  ...props
-}) => {
-  const [value, setValue] = useState<
-    { colCount: string; rowCount: string } | undefined
-  >(initialValue);
+const DimensionSelector: FC<DimensionSelectorProps> = (props) => {
+  const formik = useFormikContext<Options>();
+
   const [activeCell, setActiveCell] = useState<{
     row: number;
     col: number;
@@ -32,22 +30,15 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({
       return;
     }
 
-    setValue({
+    formik.setValues((values) => ({
+      ...values,
       rowCount: (activeCell.row + 1).toString(),
       colCount: (activeCell.col + 1).toString(),
-    });
+    }));
+    
+    formik.setFieldTouched("rowCount");
+    formik.setFieldTouched("colCount");
   }, [activeCell]);
-
-  const handleChange = useCallback(
-    (value: InputProps["value"], name: string) => {
-      setValue((currentValue) => ({
-        rowCount: currentValue?.rowCount || "",
-        colCount: currentValue?.colCount || "",
-        [name! as "height" | "width"]: value || "",
-      }));
-    },
-    []
-  );
 
   const handleMouseOver = useCallback(
     (event: MouseEvent<HTMLTableCellElement>) => {
@@ -79,10 +70,10 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({
                 activeCell?.col >= colId &&
                 activeCell?.row >= rowId,
               [styles["dimension-selector-table-cell--is-selected"]]:
-                value?.colCount &&
-                value?.rowCount &&
-                Number(value.colCount) - 1 >= colId &&
-                Number(value.rowCount) - 1 >= rowId,
+                formik.values.colCount &&
+                formik.values.rowCount &&
+                Number(formik.values.colCount) - 1 >= colId &&
+                Number(formik.values.rowCount) - 1 >= rowId,
             })}
             onMouseOver={handleMouseOver}
           >
@@ -102,7 +93,7 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({
     }
 
     return newRows;
-  }, [activeCell, props.height, props.width, value]);
+  }, [activeCell, props.height, props.width, formik]);
 
   return (
     <div className={styles["dimension-selector"]} data-app-region="no-drag">
@@ -117,8 +108,8 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({
         >
           {activeCell
             ? `Tableau ${activeCell.row + 1}x${activeCell.col + 1}`
-            : value?.rowCount && value?.colCount
-            ? `Tableau ${value.rowCount}x${value.colCount}`
+            : Number(formik.values.rowCount) && Number(formik.values.colCount)
+            ? `Tableau ${formik.values.rowCount}x${formik.values.colCount}`
             : "Insérer un tableau"}
         </caption>
 
@@ -130,10 +121,13 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({
         min={1}
         type="number"
         name="rowCount"
-        value={value?.rowCount}
+        value={formik.values.rowCount}
         max={props.height || 0}
         className={styles["dimension-selector-input"]}
-        onChange={(value) => handleChange(value, "rowCount")}
+        onChange={(value) => {
+          formik.setFieldValue("rowCount", value);
+          formik.setFieldTouched("rowCount");
+        }}
       />
       <Input
         required
@@ -141,9 +135,12 @@ const DimensionSelector: FC<DimensionSelectorProps> = ({
         type="number"
         name="colCount"
         max={props.width || 0}
-        value={value?.colCount}
+        value={formik.values.colCount}
         className={styles["dimension-selector-input"]}
-        onChange={(value) => handleChange(value, "colzCount")}
+        onChange={(value) => {
+          formik.setFieldValue("colCount", value);
+          formik.setFieldTouched("colCount");
+        }}
       />
     </div>
   );

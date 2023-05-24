@@ -11,7 +11,7 @@
         "run": "onRun",
         "actions": {
           "Shutdown": "onShutdown",
-          "SelectionChanged": "onSelectionChanged"
+          "SelectionChanged": "onContextChanged"
         }
       }
     }
