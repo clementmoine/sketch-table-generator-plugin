@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import classNames from "classnames";
 
 import Radio, { RadioProps } from "../Radio";
@@ -13,7 +13,7 @@ export interface RadioGroupProps<T>
   className?: string;
   options: RadioOption<T>[];
   value?: RadioProps["value"];
-  onChange?: (value: RadioOption<T>['value']) => void;
+  onChange?: (value: RadioOption<T>["value"]) => void;
 }
 
 const RadioGroup = <T extends string>(props: RadioGroupProps<T>) => {

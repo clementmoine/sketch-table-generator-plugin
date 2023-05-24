@@ -3,7 +3,7 @@ import { Group } from "sketch/dom";
 import sketch, { Settings } from "sketch";
 import BrowserWindow from "sketch-module-web-view";
 // @ts-ignore
-import { isWebviewPresent, sendToWebview } from 'sketch-module-web-view/remote'
+import { isWebviewPresent, sendToWebview } from "sketch-module-web-view/remote";
 
 import getLibraryLayerStyle from "../utils/getLibraryLayerStyle";
 import getLibrarySymbol from "../utils/getLibrarySymbol";
@@ -34,14 +34,14 @@ export default function () {
 
   // Close the modal on blur (not in dev mode)
   browserWindow.on("blur", () => {
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== "development") {
       browserWindow.close();
     }
   });
 
-  // Reload the modal on focus in dev mode 
+  // Reload the modal on focus in dev mode
   browserWindow.on("focus", () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       browserWindow.reload();
     }
   });
@@ -79,13 +79,11 @@ export function onSelectionChanged() {
   if (isWebviewPresent(webviewId)) {
     // Get the currently selected document
     const doc = sketch.getSelectedDocument();
-  
+
     // Try to get the currently selected table
-    const selectedTable = doc?.selectedLayers.layers.find(
-      (layer) => {
-        return sketch.Settings.layerSettingForKey(layer, "type") === "table"
-      }
-    );
+    const selectedTable = doc?.selectedLayers.layers.find((layer) => {
+      return sketch.Settings.layerSettingForKey(layer, "type") === "table";
+    });
 
     if (!selectedTable) {
       // Send the selected table to the webview
@@ -98,14 +96,17 @@ export function onSelectionChanged() {
     sendToWebview(webviewId, `setSelectedTable("${selectedTable.id}")`);
 
     // Try to get the options from the selected table
-    const options = sketch.Settings.layerSettingForKey(selectedTable, "options");
-  
+    const options = sketch.Settings.layerSettingForKey(
+      selectedTable,
+      "options"
+    );
+
     if (!options) {
       return;
     }
-  
+
     // Send the options to the webview
-    sendToWebview(webviewId, `setOptions(${JSON.stringify(options)})`)
+    sendToWebview(webviewId, `setOptions(${JSON.stringify(options)})`);
   }
 }
 
@@ -201,8 +202,7 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     headerLabel.frame.y =
       headerRow.frame.y +
       (headerRow.frame.height - headerLabel.frame.height) / 2;
-    headerLabel.frame.x =
-      i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
+    headerLabel.frame.x = i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
 
     const labelOverride = headerLabel.overrides.find(
       (override) =>
@@ -218,8 +218,7 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
   }
 
   headerRow.frame.width =
-    Number(colCount) *
-      (Number(cellWidth) + Number(colGap)) -
+    Number(colCount) * (Number(cellWidth) + Number(colGap)) -
     Number(colGap) +
     2 * Number(rowPadding);
 
@@ -303,8 +302,7 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
 
     // Resize the row to fit the cols
     row.frame.width =
-      Number(colCount) *
-        (Number(cellWidth) + Number(colGap)) -
+      Number(colCount) * (Number(cellWidth) + Number(colGap)) -
       Number(colGap) +
       2 * Number(rowPadding);
 

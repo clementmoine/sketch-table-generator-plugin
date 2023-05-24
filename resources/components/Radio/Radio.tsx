@@ -1,10 +1,4 @@
-import React, {
-  ChangeEventHandler,
-  FC,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import classNames from "classnames";
 
 import styles from "./Radio.module.scss";

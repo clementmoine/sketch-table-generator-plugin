@@ -22,7 +22,16 @@ export interface SwitchProps {
 }
 
 const Switch: FC<SwitchProps> = (props) => {
-  const { label, id, name, className, switchClassName, options, direction, onChange } = props;
+  const {
+    label,
+    id,
+    name,
+    className,
+    switchClassName,
+    options,
+    direction,
+    onChange,
+  } = props;
 
   const isControlled = useMemo(() => "value" in props, [props]);
 
@@ -61,7 +70,10 @@ const Switch: FC<SwitchProps> = (props) => {
         {label}
       </label>
 
-      <ol id={id || name} className={classNames(styles["switch"], switchClassName)}>
+      <ol
+        id={id || name}
+        className={classNames(styles["switch"], switchClassName)}
+      >
         {options.map(
           ({ label: optionLabel, value: optionValue, ...option }) => (
             <li
@@ -70,7 +82,8 @@ const Switch: FC<SwitchProps> = (props) => {
               data-value={optionValue}
               onClick={handleChange}
               className={classNames(styles["switch__option"], {
-                [styles["switch__option--is-active"]]: currentChecked === optionValue,
+                [styles["switch__option--is-active"]]:
+                  currentChecked === optionValue,
               })}
               key={optionValue}
             >

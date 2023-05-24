@@ -1,10 +1,10 @@
-import React from 'react';
-import classNames from 'classnames';
-import { FC,useMemo } from 'react';
+import React, { FC, useMemo } from "react";
+import classNames from "classnames";
 
-import styles from './Button.module.scss';
+import styles from "./Button.module.scss";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string;
 }
 
@@ -14,7 +14,7 @@ const Button: FC<ButtonProps> = (props) => {
     onClick,
     children,
     className,
-    type = 'button',
+    type = "button",
     ...restProps
   } = props;
 
@@ -23,7 +23,7 @@ const Button: FC<ButtonProps> = (props) => {
       return restProps.label;
     }
 
-    if (typeof children === 'string') {
+    if (typeof children === "string") {
       return children;
     }
   }, [children, restProps.label]);
@@ -33,17 +33,14 @@ const Button: FC<ButtonProps> = (props) => {
       {...restProps}
       type={type}
       onClick={onClick}
-      className={classNames(
-        styles['button'],
-        className
-      )}
+      className={classNames(styles["button"], className)}
       data-app-region="no-drag"
     >
-        {label}
+      {label}
     </button>
   );
 };
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 export default Button;
