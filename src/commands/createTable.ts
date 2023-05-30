@@ -146,8 +146,12 @@ async function editTable(options: Options = defaultOptions): Promise<void> {
   // Get the currently selected document
   const doc = sketch.getSelectedDocument();
 
-  // Parse the selected table to take every overrides that needs to be kept
-  // Once we parsed table data we will re-create this table with new options
+  // Change the cells symbol, width and height by finding them with their settings (type: cell)
+
+  // If the given dimensions of the current table is higher than selected one, fill the table with new cells
+  // Else remove cells we don't need anymore
+  
+  // Adjust the size of every containers
 }
 
 /**
@@ -264,6 +268,10 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
       name: `Row ${i + 1}`,
       parent: rowsGroup,
     });
+
+    // Keep settings of the row to permit editing
+    Settings.setLayerSettingForKey(rowGroup, "type", "table:row");
+    Settings.setLayerSettingForKey(rowGroup, "rowId", i);
 
     const row = TableRowStandard.createNewInstance();
     row.frame.x = -Number(rowPadding);
