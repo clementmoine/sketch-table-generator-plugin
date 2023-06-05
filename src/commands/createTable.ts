@@ -49,8 +49,10 @@ export default function () {
   // Handle messages from the webview
   browserWindow.webContents.on("submit", (rawOptions) => {
     const options = JSON.parse(rawOptions);
-    
-    (options.mode === "edit" ? editTable : createTable)(options).then(browserWindow.close);
+
+    (options.mode === "edit" ? editTable : createTable)(options).then(
+      browserWindow.close
+    );
   });
 
   // Handle the update selection asked from the webview
@@ -124,9 +126,9 @@ export function onShutdown() {
 
 /**
  * Edit an existing table
- * 
+ *
  * @async
- * @param {Options} options - Table options 
+ * @param {Options} options - Table options
  */
 async function editTable(options: Options = defaultOptions): Promise<void> {
   const {
@@ -142,7 +144,7 @@ async function editTable(options: Options = defaultOptions): Promise<void> {
     cellSymbolName = defaultOptions.cellSymbolName,
     groupBy = defaultOptions.groupBy,
   } = options;
-  
+
   // Get the currently selected document
   const doc = sketch.getSelectedDocument();
 
@@ -150,7 +152,7 @@ async function editTable(options: Options = defaultOptions): Promise<void> {
 
   // If the given dimensions of the current table is higher than selected one, fill the table with new cells
   // Else remove cells we don't need anymore
-  
+
   // Adjust the size of every containers
 }
 
@@ -178,7 +180,10 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
   // Get the currently selected document
   const doc = sketch.getSelectedDocument();
 
-  // Get the necessary symbols for table creation
+  if (!doc) {
+    throw new Error("No document selected");
+  }
+
   const [
     TableRowStandard,
     TableCellDefault,
@@ -186,7 +191,7 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     TableCellSymbol,
     TableCellLayerStyle,
     TableOddRowStyle,
-    TableEventRowStyle,
+    TableEvenRowStyle,
   ] = await Promise.all([
     getLibrarySymbol(libraryName, "Table/Row/Standard"),
     getLibrarySymbol(libraryName, "Table/Cell/Default"),
@@ -195,20 +200,9 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     getLibraryLayerStyle(libraryName, cellStyleName),
     getLibraryLayerStyle(libraryName, "Table/Row/_Odd (impair)"),
     getLibraryLayerStyle(libraryName, "Table/Row/_Even (pair)"),
-  ]);
-
-  if (
-    !doc ||
-    !TableRowStandard ||
-    !TableCellDefault ||
-    !TableHeaderLabelLeftDefault ||
-    !TableCellSymbol ||
-    !TableCellLayerStyle ||
-    !TableOddRowStyle ||
-    !TableEventRowStyle
-  ) {
-    return;
-  }
+  ]).catch(() => {
+    throw new Error("Missing required symbols or layer styles");
+  });
 
   // Create a group for the table
   const tableGroup = new Group({
@@ -231,13 +225,12 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
   // Create header labels
   for (let i = 0; i < Number(colCount); i++) {
     const headerLabel = TableHeaderLabelLeftDefault.createNewInstance();
-
     headerLabel.parent = headerGroup;
     headerLabel.frame.width = Number(cellWidth);
     headerLabel.frame.y =
       headerRow.frame.y +
       (headerRow.frame.height - headerLabel.frame.height) / 2;
-    headerLabel.frame.x = i * (headerLabel.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
+    headerLabel.frame.x = i * (headerLabel.frame.width + Number(colGap));
 
     const labelOverride = headerLabel.overrides.find(
       (override) =>
@@ -245,11 +238,9 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
         override.affectedLayer.name.includes("Label")
     );
 
-    if (!labelOverride) {
-      return;
+    if (labelOverride) {
+      labelOverride.value = `En-tête ${i + 1}`;
     }
-
-    labelOverride.value = `En-tête ${i + 1}`;
   }
 
   headerRow.frame.width =
@@ -257,27 +248,31 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     Number(colGap) +
     2 * Number(rowPadding);
 
-  const rowsGroup = new Group({
-    name: "Rows",
+  let rowsGroup: Group | undefined = undefined;
+
+  if (groupBy === "column") {
+    rowsGroup = new Group({
+      name: "Rows",
+      parent: tableGroup,
+      // @ts-ignore
+      locked: true,
+    });
+  }
+
+  const colsRowsGroup = new Group({
+    name: groupBy === "row" ? "Rows" : "Cols",
     parent: tableGroup,
   });
 
-  // Create the table rows
-  for (let i = 0; i < Number(rowCount); i++) {
-    const rowGroup = new Group({
-      name: `Row ${i + 1}`,
-      parent: rowsGroup,
-    });
-
-    // Keep settings of the row to permit editing
-    Settings.setLayerSettingForKey(rowGroup, "type", "table:row");
-    Settings.setLayerSettingForKey(rowGroup, "rowId", i);
-
+  // Create the row background (even/odd)
+  // This will be next to the rows if grouped by row 
+  // Or in a separated group if grouped by column (plus it will be locked)
+  const rows = [...Array(Number(rowCount))].map((_, i) => {
     const row = TableRowStandard.createNewInstance();
     row.frame.x = -Number(rowPadding);
     row.frame.height = Number(rowHeight);
     row.frame.y = (i + 1) * row.frame.height;
-    row.parent = rowGroup;
+    row.parent = groupBy === "column" ? (rowsGroup as Group) : tableGroup;
 
     // Set the row layer style override to "Table/Row/Odd" if odd or "Table/Row/Even" if even
     const rowStyleOverride = row.overrides.find(
@@ -288,24 +283,61 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
 
     if (rowStyleOverride) {
       rowStyleOverride.value = (
-        i % 2 === 0 ? TableOddRowStyle : TableEventRowStyle
+        i % 2 === 0 ? TableOddRowStyle : TableEvenRowStyle
       ).id;
     }
 
-    const cellsGroup = new Group({
-      name: `Cells`,
-      parent: rowGroup,
+    // Resize the row to fit the cols
+    row.frame.width =
+      Number(colCount) * (Number(cellWidth) + Number(colGap)) -
+      Number(colGap) +
+      2 * Number(rowPadding);
+
+    return row;
+  });
+
+  // Create the table cells grouped by cols or rows
+  for (
+    let i = 0;
+    i < (groupBy === "row" ? Number(rowCount) : Number(colCount));
+    i++
+  ) {
+    const group = new Group({
+      parent: colsRowsGroup,
+      name: `${groupBy === "row" ? "Row" : "Col"} ${i + 1}`,
     });
 
-    // Create the cells
-    for (let j = 0; j < Number(colCount); j++) {
+    // Keep settings of the group to permit editing
+    Settings.setLayerSettingForKey(
+      group,
+      "type",
+      `table:${groupBy === "row" ? "row" : "col"}`
+    );
+    Settings.setLayerSettingForKey(group, "id", i);
+
+    if (groupBy === "row") {
+      rows[i].parent = group;
+    }
+
+    // Create a group for cell of the column or row (depends on groupBy)
+    const cellsGroup = new Group({
+      name: `Cells`,
+      parent: group,
+    });
+
+    const cellCount = groupBy === "row" ? Number(colCount) : Number(rowCount);
+
+    for (let j = 0; j < cellCount; j++) {
+      const row = rows[groupBy === "row" ? i : j];
+
       const cell = TableCellDefault.createNewInstance();
       cell.parent = cellsGroup;
       cell.frame.width = Number(cellWidth);
       cell.frame.y = row.frame.y + (row.frame.height - cell.frame.height) / 2;
-      cell.frame.x = j * (cell.frame.width + Number(colGap)); // Ajoute un espace de 16px entre chaque cellule
+      // cell.frame.x = groupBy === 'row' ? j * (cell.frame.width + Number(colGap)) : i * cell.frame.width + i * Number(colGap);
+      cell.frame.x =
+        (groupBy === "row" ? j : i) * (cell.frame.width + Number(colGap));
 
-      // Affect the cell symbol
       const tableCellSymbolOverride = cell.overrides.find(
         (override) =>
           override.property === "symbolID" &&
@@ -316,7 +348,6 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
         tableCellSymbolOverride.value = TableCellSymbol.symbolId;
       }
 
-      // Affect the cell style
       const tableCellLayerStyleOverride = cell.overrides.find(
         (override) =>
           (override.property as string) === "layerStyle" &&
@@ -327,7 +358,6 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
         tableCellLayerStyleOverride.value = TableCellLayerStyle.id;
       }
 
-      // Affect the cell value
       const tableCellValueOverride = cell.overrides.find(
         (override) =>
           (override.property as string) === "stringValue" &&
@@ -335,21 +365,21 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
       );
 
       if (tableCellValueOverride) {
-        tableCellValueOverride.value = `Cellule ${i + 1}:${j + 1}`;
+        tableCellValueOverride.value = `Cellule ${
+          groupBy === "row" ? `${i + 1}:${j + 1}` : `${j + 1}:${i + 1}`
+        }`;
       }
     }
 
-    // Resize the row to fit the cols
-    row.frame.width =
-      Number(colCount) * (Number(cellWidth) + Number(colGap)) -
-      Number(colGap) +
-      2 * Number(rowPadding);
-
     cellsGroup.adjustToFit();
-    rowGroup.adjustToFit();
+    group.adjustToFit();
   }
 
-  rowsGroup.adjustToFit();
+  if (groupBy === "column") {
+    (rowsGroup as Group).adjustToFit();
+  }
+
+  colsRowsGroup.adjustToFit();
   headerGroup.adjustToFit();
   tableGroup.adjustToFit();
 

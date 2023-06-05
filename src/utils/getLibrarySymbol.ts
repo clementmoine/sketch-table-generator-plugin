@@ -5,9 +5,9 @@ import Options from "../../resources/types/options.types";
 /**
  * Get a symbol from the given library with the name
  */
-function getLibrarySymbol(libraryName?: Options['libraryName'], name?: string): SymbolMaster | null {
+function getLibrarySymbol(libraryName?: Options['libraryName'], name?: string): SymbolMaster {
   if (!libraryName && !name) {
-    return null;
+    throw null;
   }
 
   const library = ((sketch as any).getLibraries() as Library[]).find(
@@ -17,7 +17,7 @@ function getLibrarySymbol(libraryName?: Options['libraryName'], name?: string): 
   const doc = sketch.getSelectedDocument();
 
   if (!doc || !library) {
-    return null;
+    throw null;
   }
 
   return library

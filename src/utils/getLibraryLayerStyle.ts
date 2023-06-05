@@ -7,9 +7,9 @@ import Options from "../../resources/types/options.types";
  * 
  * @todo Handle the library name to be undefined and use only local components
  */
-function getLibraryLayerStyle(libraryName?: Options['libraryName'], name?: string): SharedStyle | null {
+function getLibraryLayerStyle(libraryName?: Options['libraryName'], name?: string): SharedStyle {
   if (!libraryName || !name) {
-    return null;
+    throw null;
   }
 
   const library = ((sketch as any)
@@ -19,7 +19,7 @@ function getLibraryLayerStyle(libraryName?: Options['libraryName'], name?: strin
   const doc = sketch.getSelectedDocument();
 
   if (!doc || !library) {
-    return null;
+    throw null;
   }
 
   return library
