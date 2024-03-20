@@ -190,6 +190,7 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     TableHeaderLabelLeftDefault,
     TableCellSymbol,
     TableCellLayerStyle,
+    TableHeaderRowStyle,
     TableOddRowStyle,
     TableEvenRowStyle,
   ] = await Promise.all([
@@ -198,6 +199,7 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
     getLibrarySymbol(libraryName, "Table/Header Label/Left/Default"),
     getLibrarySymbol(libraryName, cellSymbolName),
     getLibraryLayerStyle(libraryName, cellStyleName),
+    getLibraryLayerStyle(libraryName, "Table/Row/Header"),
     getLibraryLayerStyle(libraryName, "Table/Row/_Odd (impair)"),
     getLibraryLayerStyle(libraryName, "Table/Row/_Even (pair)"),
   ]).catch(() => {
@@ -221,6 +223,17 @@ async function createTable(options: Options = defaultOptions): Promise<void> {
   headerRow.frame.height = Number(rowHeight);
   headerRow.frame.x = -Number(rowPadding);
   headerRow.parent = headerGroup;
+
+  // Set the row layer style override to "Table/Row/Odd" if odd or "Table/Row/Even" if even
+  const headerRowStyleOverride = headerRow.overrides.find(
+    (override) =>
+      (override.property as string) === "layerStyle" &&
+      override.affectedLayer.name === "🎨 Background style"
+  );
+
+  if (headerRowStyleOverride) {
+    headerRowStyleOverride.value = TableHeaderRowStyle.id;
+  }
 
   // Create header labels
   for (let i = 0; i < Number(colCount); i++) {

@@ -1,6 +1,7 @@
 # ✨ Sketch Table Generator
 
-<img width="698" alt="image" src="https://user-images.githubusercontent.com/27948112/234042121-4d465362-9efd-4547-b2c6-61d79e7dc4e7.png">
+<img width="698" alt="image" src="./assets/screenshot.png">
+
 
 
 ## Installation
@@ -80,7 +81,14 @@ if(entry.isPluginCommand ){
 To view the output of your `console.log`, you have a few different options:
 
 - Use the [`sketch-dev-tools`](https://github.com/skpm/sketch-dev-tools)
-- Open `Console.app` and look for the sketch logs
+- Open `Console.app` and look for the sketch logs with the following search filter :
+`processus:sketch
+catégorie:<Description manquante>
+chemin d’accès au processus:/Applications/Sketch.app/Contents/MacOS/Sketch
+message:bugsnag
+message:task
+message:connection
+message:System Trust Evaluation yielded status`
 - Look at the `~/Library/Logs/com.bohemiancoding.sketch3/Plugin Output.log` file
 
 Skpm provides a convenient way to do the latter:
